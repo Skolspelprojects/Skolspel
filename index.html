@@ -21,13 +21,41 @@
     margin: 2rem auto;
     box-shadow: 0 0 20px #222;
     cursor: pointer;
-    transition: transform 0.1s ease;
     position: relative;
+    user-select: none;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   #cookie:active {
     transform: scale(0.9);
     box-shadow: 0 0 40px #555;
   }
+
+  /* Sparkle effect container */
+  .sparkle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: white;
+    border-radius: 50%;
+    opacity: 0.8;
+    pointer-events: none;
+    animation: sparkle-fade 700ms forwards;
+    filter: drop-shadow(0 0 2px white);
+  }
+  @keyframes sparkle-fade {
+    0% {
+      transform: translate(0, 0) scale(1);
+      opacity: 0.8;
+    }
+    100% {
+      transform: translate(var(--tx), var(--ty)) scale(0);
+      opacity: 0;
+    }
+  }
+
   #score {
     font-size: 2.5rem;
     margin-top: 1rem;
@@ -47,8 +75,9 @@
     margin-bottom: 1rem;
     cursor: pointer;
     transition: background 0.3s ease;
+    user-select: none;
   }
-  .upgrade:hover {
+  .upgrade:hover:not(.disabled) {
     background: #333;
   }
   .upgrade.disabled {
@@ -72,6 +101,7 @@
     border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    user-select: none;
   }
   #reset-btn:hover {
     background-color: #555;
@@ -113,7 +143,6 @@
   const cookie = document.getElementById('cookie');
   const scoreDisplay = document.getElementById('score');
 
-  // Upgrade data
   const upgrades = {
     cursor: {
       cost: 10,
@@ -153,10 +182,51 @@
     }
   }
 
-  cookie.addEventListener('click', () => {
+  // Save and load game data
+  function saveGame() {
+    const saveData = {
+      score,
+      upgrades: {}
+    };
+    for (const key in upgrades) {
+      saveData.upgrades[key] = {
+        owned: upgrades[key].owned,
+        cost: upgrades[key].cost
+      };
+    }
+    localStorage.setItem('blackClickerSave', JSON.stringify(saveData));
+  }
+
+  function loadGame() {
+    const saved = localStorage.getItem('blackClickerSave');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        score = data.score || 0;
+        if (data.upgrades) {
+          for (const key in data.upgrades) {
+            if (upgrades[key]) {
+              upgrades[key].owned = data.upgrades[key].owned || 0;
+              upgrades[key].cost = data.upgrades[key].cost || upgrades[key].cost;
+            }
+          }
+        }
+      } catch {
+        // Ignore parsing errors and start fresh
+      }
+    }
+    updateCookiesPerSecond();
+    updateScoreDisplay();
+    updateUpgradeDisplays();
+  }
+
+  // Cookie click handler
+  cookie.addEventListener('click', (e) => {
     score++;
     updateScoreDisplay();
     updateUpgradeDisplays();
+    spawnSparkles(e.clientX, e.clientY);
+    saveGame();
   });
 
   // Buy upgrade function
@@ -169,10 +239,10 @@
       updateCookiesPerSecond();
       updateScoreDisplay();
       updateUpgradeDisplays();
+      saveGame();
     }
   }
 
-  // Attach event listeners to upgrade buttons
   upgrades.cursor.element.addEventListener('click', () => buyUpgrade('cursor'));
   upgrades.grandma.element.addEventListener('click', () => buyUpgrade('grandma'));
 
@@ -186,9 +256,12 @@
 
   // Auto clicker interval (adds cookies per second)
   setInterval(() => {
-    score += cookiesPerSecond;
-    updateScoreDisplay();
-    updateUpgradeDisplays();
+    if (cookiesPerSecond > 0) {
+      score += cookiesPerSecond;
+      updateScoreDisplay();
+      updateUpgradeDisplays();
+      saveGame();
+    }
   }, 1000);
 
   // Reset button
@@ -203,12 +276,33 @@
       }
       updateScoreDisplay();
       updateUpgradeDisplays();
+      saveGame();
     }
   });
 
-  // Initialize displays
-  updateScoreDisplay();
-  updateUpgradeDisplays();
+  // Sparkle effect on click
+  function spawnSparkles(x, y) {
+    // Calculate relative position inside cookie element
+    const rect = cookie.getBoundingClientRect();
+    for (let i = 0; i < 8; i++) {
+      const sparkle = document.createElement('div');
+      sparkle.classList.add('sparkle');
+      // Random direction & distance
+      const angle = Math.random() * 2 * Math.PI;
+      const distance = 20 + Math.random() * 20;
+      sparkle.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+      sparkle.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+      sparkle.style.left = (x - rect.left) + 'px';
+      sparkle.style.top = (y - rect.top) + 'px';
+      cookie.appendChild(sparkle);
+      // Remove sparkle after animation
+      sparkle.addEventListener('animationend', () => sparkle.remove());
+    }
+  }
+
+  // Initial load
+  loadGame();
+
 </script>
 
 </body>
