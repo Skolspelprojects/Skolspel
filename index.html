@@ -8,7 +8,7 @@
   body {
     background-color: #111;
     color: #eee;
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     text-align: center;
     margin: 0;
     padding: 2rem;
@@ -16,40 +16,199 @@
   #cookie {
     background-color: black;
     border-radius: 50%;
-    width: 150px;
-    height: 150px;
+    width: 180px;
+    height: 180px;
     margin: 2rem auto;
-    box-shadow: 0 0 10px #555;
+    box-shadow: 0 0 20px #222;
     cursor: pointer;
     transition: transform 0.1s ease;
+    position: relative;
   }
   #cookie:active {
-    transform: scale(0.95);
+    transform: scale(0.9);
+    box-shadow: 0 0 40px #555;
   }
   #score {
-    font-size: 2rem;
+    font-size: 2.5rem;
     margin-top: 1rem;
+    letter-spacing: 2px;
   }
-  h1 {
-    font-weight: normal;
+  #upgrades {
+    margin-top: 2rem;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .upgrade {
+    background: #222;
+    border: 2px solid #444;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  .upgrade:hover {
+    background: #333;
+  }
+  .upgrade.disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  .upgrade-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+  .upgrade-cost {
+    color: #aaa;
+  }
+  #reset-btn {
+    margin-top: 1.5rem;
+    padding: 0.7rem 2rem;
+    font-size: 1rem;
+    border: none;
+    background-color: #222;
+    color: #eee;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  #reset-btn:hover {
+    background-color: #555;
+  }
+  footer {
+    margin-top: 3rem;
+    font-size: 0.9rem;
+    color: #555;
   }
 </style>
 </head>
 <body>
 
 <h1>Black Clicker</h1>
-<div id="cookie"></div>
+<div id="cookie" title="Click me!"></div>
 <div id="score">0 cookies</div>
+
+<div id="upgrades">
+  <div class="upgrade" id="cursor-upgrade" title="Automatically click 1 cookie per second">
+    <div class="upgrade-title">Cursor</div>
+    <div>Cost: <span class="upgrade-cost" id="cursor-cost">10</span> cookies</div>
+    <div>Owned: <span id="cursor-owned">0</span></div>
+  </div>
+  <div class="upgrade" id="grandma-upgrade" title="Automatically produce 5 cookies per second">
+    <div class="upgrade-title">Grandma</div>
+    <div>Cost: <span class="upgrade-cost" id="grandma-cost">50</span> cookies</div>
+    <div>Owned: <span id="grandma-owned">0</span></div>
+  </div>
+</div>
+
+<button id="reset-btn">Reset Game</button>
+
+<footer>Made by Gustav</footer>
 
 <script>
   let score = 0;
+  let cookiesPerSecond = 0;
+
   const cookie = document.getElementById('cookie');
   const scoreDisplay = document.getElementById('score');
 
+  // Upgrade data
+  const upgrades = {
+    cursor: {
+      cost: 10,
+      owned: 0,
+      cps: 1,
+      costIncreaseFactor: 1.15,
+      element: document.getElementById('cursor-upgrade'),
+      costElement: document.getElementById('cursor-cost'),
+      ownedElement: document.getElementById('cursor-owned')
+    },
+    grandma: {
+      cost: 50,
+      owned: 0,
+      cps: 5,
+      costIncreaseFactor: 1.15,
+      element: document.getElementById('grandma-upgrade'),
+      costElement: document.getElementById('grandma-cost'),
+      ownedElement: document.getElementById('grandma-owned')
+    }
+  };
+
+  function updateScoreDisplay() {
+    scoreDisplay.textContent = `${score} cookie${score !== 1 ? 's' : ''}`;
+  }
+
+  function updateUpgradeDisplays() {
+    for (const key in upgrades) {
+      const upgrade = upgrades[key];
+      upgrade.costElement.textContent = Math.floor(upgrade.cost);
+      upgrade.ownedElement.textContent = upgrade.owned;
+
+      if (score >= upgrade.cost) {
+        upgrade.element.classList.remove('disabled');
+      } else {
+        upgrade.element.classList.add('disabled');
+      }
+    }
+  }
+
   cookie.addEventListener('click', () => {
     score++;
-    scoreDisplay.textContent = score + ' cookies';
+    updateScoreDisplay();
+    updateUpgradeDisplays();
   });
+
+  // Buy upgrade function
+  function buyUpgrade(key) {
+    const upgrade = upgrades[key];
+    if (score >= upgrade.cost) {
+      score -= Math.floor(upgrade.cost);
+      upgrade.owned++;
+      upgrade.cost *= upgrade.costIncreaseFactor;
+      updateCookiesPerSecond();
+      updateScoreDisplay();
+      updateUpgradeDisplays();
+    }
+  }
+
+  // Attach event listeners to upgrade buttons
+  upgrades.cursor.element.addEventListener('click', () => buyUpgrade('cursor'));
+  upgrades.grandma.element.addEventListener('click', () => buyUpgrade('grandma'));
+
+  // Calculate total cookies per second from upgrades
+  function updateCookiesPerSecond() {
+    cookiesPerSecond = 0;
+    for (const key in upgrades) {
+      cookiesPerSecond += upgrades[key].owned * upgrades[key].cps;
+    }
+  }
+
+  // Auto clicker interval (adds cookies per second)
+  setInterval(() => {
+    score += cookiesPerSecond;
+    updateScoreDisplay();
+    updateUpgradeDisplays();
+  }, 1000);
+
+  // Reset button
+  const resetBtn = document.getElementById('reset-btn');
+  resetBtn.addEventListener('click', () => {
+    if (confirm('Are you sure you want to reset your game?')) {
+      score = 0;
+      cookiesPerSecond = 0;
+      for (const key in upgrades) {
+        upgrades[key].owned = 0;
+        upgrades[key].cost = key === 'cursor' ? 10 : 50;
+      }
+      updateScoreDisplay();
+      updateUpgradeDisplays();
+    }
+  });
+
+  // Initialize displays
+  updateScoreDisplay();
+  updateUpgradeDisplays();
 </script>
 
 </body>
