@@ -136,32 +136,32 @@
 <div id="score">0 cookies</div>
 
 <div id="upgrades">
-  <div class="upgrade" id="cursor-upgrade" title="Automatically click 1 cookie per second">
+  <div class="upgrade" id="cursor-upgrade" title="Automatically click 5 cookies per second">
     <div class="upgrade-title">Cursor</div>
     <div>Cost: <span class="upgrade-cost" id="cursor-cost">10</span> cookies</div>
     <div>Owned: <span id="cursor-owned">0</span></div>
   </div>
-  <div class="upgrade" id="grandma-upgrade" title="Automatically produce 5 cookies per second">
+  <div class="upgrade" id="grandma-upgrade" title="Automatically produce 20 cookies per second">
     <div class="upgrade-title">Grandma</div>
     <div>Cost: <span class="upgrade-cost" id="grandma-cost">50</span> cookies</div>
     <div>Owned: <span id="grandma-owned">0</span></div>
   </div>
-  <div class="upgrade" id="farm-upgrade" title="Automatically produce 20 cookies per second">
+  <div class="upgrade" id="farm-upgrade" title="Automatically produce 100 cookies per second">
     <div class="upgrade-title">Farm</div>
     <div>Cost: <span class="upgrade-cost" id="farm-cost">200</span> cookies</div>
     <div>Owned: <span id="farm-owned">0</span></div>
   </div>
-  <div class="upgrade" id="factory-upgrade" title="Automatically produce 100 cookies per second">
+  <div class="upgrade" id="factory-upgrade" title="Automatically produce 500 cookies per second">
     <div class="upgrade-title">Factory</div>
     <div>Cost: <span class="upgrade-cost" id="factory-cost">1,000</span> cookies</div>
     <div>Owned: <span id="factory-owned">0</span></div>
   </div>
-  <div class="upgrade" id="mine-upgrade" title="Automatically produce 200 cookies per second">
+  <div class="upgrade" id="mine-upgrade" title="Automatically produce 1000 cookies per second">
     <div class="upgrade-title">Mine</div>
     <div>Cost: <span class="upgrade-cost" id="mine-cost">10,000</span> cookies</div>
     <div>Owned: <span id="mine-owned">0</span></div>
   </div>
-  <div class="upgrade" id="lab-upgrade" title="Automatically produce 1000 cookies per second">
+  <div class="upgrade" id="lab-upgrade" title="Automatically produce 5000 cookies per second">
     <div class="upgrade-title">Lab</div>
     <div>Cost: <span class="upgrade-cost" id="lab-cost">100,000</span> cookies</div>
     <div>Owned: <span id="lab-owned">0</span></div>
@@ -183,8 +183,8 @@
     cursor: {
       cost: 10,
       owned: 0,
-      cps: 1,
-      costIncreaseFactor: 1.15,
+      cps: 5,            // increased from 1 to 5
+      costIncreaseFactor: 1.12, // reduced from 1.15
       element: document.getElementById('cursor-upgrade'),
       costElement: document.getElementById('cursor-cost'),
       ownedElement: document.getElementById('cursor-owned')
@@ -192,8 +192,8 @@
     grandma: {
       cost: 50,
       owned: 0,
-      cps: 5,
-      costIncreaseFactor: 1.15,
+      cps: 20,           // increased from 5 to 20
+      costIncreaseFactor: 1.12,
       element: document.getElementById('grandma-upgrade'),
       costElement: document.getElementById('grandma-cost'),
       ownedElement: document.getElementById('grandma-owned')
@@ -201,8 +201,8 @@
     farm: {
       cost: 200,
       owned: 0,
-      cps: 20,
-      costIncreaseFactor: 1.18,
+      cps: 100,          // increased from 20 to 100
+      costIncreaseFactor: 1.15, // reduced from 1.18
       element: document.getElementById('farm-upgrade'),
       costElement: document.getElementById('farm-cost'),
       ownedElement: document.getElementById('farm-owned')
@@ -210,8 +210,8 @@
     factory: {
       cost: 1000,
       owned: 0,
-      cps: 100,
-      costIncreaseFactor: 1.20,
+      cps: 500,          // increased from 100 to 500
+      costIncreaseFactor: 1.18, // reduced from 1.20
       element: document.getElementById('factory-upgrade'),
       costElement: document.getElementById('factory-cost'),
       ownedElement: document.getElementById('factory-owned')
@@ -219,8 +219,8 @@
     mine: {
       cost: 10000,
       owned: 0,
-      cps: 200,
-      costIncreaseFactor: 1.22,
+      cps: 1000,         // increased from 200 to 1000
+      costIncreaseFactor: 1.20, // reduced from 1.22
       element: document.getElementById('mine-upgrade'),
       costElement: document.getElementById('mine-cost'),
       ownedElement: document.getElementById('mine-owned')
@@ -228,8 +228,8 @@
     lab: {
       cost: 100000,
       owned: 0,
-      cps: 1000,
-      costIncreaseFactor: 1.25,
+      cps: 5000,         // increased from 1000 to 5000
+      costIncreaseFactor: 1.20, // reduced from 1.25
       element: document.getElementById('lab-upgrade'),
       costElement: document.getElementById('lab-cost'),
       ownedElement: document.getElementById('lab-owned')
