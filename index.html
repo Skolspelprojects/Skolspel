@@ -12,6 +12,7 @@
     text-align: center;
     margin: 0;
     padding: 2rem;
+    user-select: none;
   }
   #cookie {
     background-color: black;
@@ -22,17 +23,15 @@
     box-shadow: 0 0 20px #222;
     cursor: pointer;
     position: relative;
-    user-select: none;
-    transition: transform 0.1s ease, box-shadow 0.1s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
   }
   #cookie:active {
     transform: scale(0.9);
     box-shadow: 0 0 40px #555;
   }
-
   /* Sparkle effect container */
   .sparkle {
     position: absolute;
@@ -55,11 +54,11 @@
       opacity: 0;
     }
   }
-
   #score {
     font-size: 2.5rem;
     margin-top: 1rem;
     letter-spacing: 2px;
+    font-variant-numeric: tabular-nums;
   }
   #upgrades {
     margin-top: 2rem;
@@ -75,7 +74,6 @@
     margin-bottom: 1rem;
     cursor: pointer;
     transition: background 0.3s ease;
-    user-select: none;
   }
   .upgrade:hover:not(.disabled) {
     background: #333;
@@ -87,6 +85,7 @@
   .upgrade-title {
     font-size: 1.2rem;
     font-weight: bold;
+    margin-bottom: 0.2rem;
   }
   .upgrade-cost {
     color: #aaa;
@@ -101,7 +100,6 @@
     border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    user-select: none;
   }
   #reset-btn:hover {
     background-color: #555;
@@ -164,14 +162,18 @@
     }
   };
 
+  function formatNumber(num) {
+    return num.toLocaleString();
+  }
+
   function updateScoreDisplay() {
-    scoreDisplay.textContent = `${score} cookie${score !== 1 ? 's' : ''}`;
+    scoreDisplay.textContent = `${formatNumber(score)} cookie${score !== 1 ? 's' : ''}`;
   }
 
   function updateUpgradeDisplays() {
     for (const key in upgrades) {
       const upgrade = upgrades[key];
-      upgrade.costElement.textContent = Math.floor(upgrade.cost);
+      upgrade.costElement.textContent = formatNumber(Math.floor(upgrade.cost));
       upgrade.ownedElement.textContent = upgrade.owned;
 
       if (score >= upgrade.cost) {
@@ -182,11 +184,12 @@
     }
   }
 
-  // Save and load game data
+  // Save and load game data with offline progress
   function saveGame() {
     const saveData = {
       score,
-      upgrades: {}
+      upgrades: {},
+      lastTimestamp: Date.now()
     };
     for (const key in upgrades) {
       saveData.upgrades[key] = {
@@ -202,7 +205,33 @@
     if (saved) {
       try {
         const data = JSON.parse(saved);
-        score = data.score || 0;
+
+        // Offline progress calculation
+        if (data.lastTimestamp) {
+          const now = Date.now();
+          const elapsedSeconds = Math.floor((now - data.lastTimestamp) / 1000);
+
+          // Sum total CPS from saved upgrades
+          let offlineCPS = 0;
+          if (data.upgrades) {
+            for (const key in data.upgrades) {
+              if (upgrades[key]) {
+                offlineCPS += (upgrades[key].cps || 0) * (data.upgrades[key].owned || 0);
+              }
+            }
+          }
+
+          const offlineCookies = offlineCPS * elapsedSeconds;
+
+          if (offlineCookies > 0) {
+            alert(`Welcome back! You earned ${formatNumber(offlineCookies)} cookie${offlineCookies !== 1 ? 's' : ''} while you were away.`);
+          }
+
+          score = (data.score || 0) + offlineCookies;
+        } else {
+          score = data.score || 0;
+        }
+
         if (data.upgrades) {
           for (const key in data.upgrades) {
             if (upgrades[key]) {
@@ -212,7 +241,8 @@
           }
         }
       } catch {
-        // Ignore parsing errors and start fresh
+        // Ignore parsing errors, start fresh
+        score = 0;
       }
     }
     updateCookiesPerSecond();
@@ -282,12 +312,10 @@
 
   // Sparkle effect on click
   function spawnSparkles(x, y) {
-    // Calculate relative position inside cookie element
     const rect = cookie.getBoundingClientRect();
     for (let i = 0; i < 8; i++) {
       const sparkle = document.createElement('div');
       sparkle.classList.add('sparkle');
-      // Random direction & distance
       const angle = Math.random() * 2 * Math.PI;
       const distance = 20 + Math.random() * 20;
       sparkle.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
@@ -295,7 +323,6 @@
       sparkle.style.left = (x - rect.left) + 'px';
       sparkle.style.top = (y - rect.top) + 'px';
       cookie.appendChild(sparkle);
-      // Remove sparkle after animation
       sparkle.addEventListener('animationend', () => sparkle.remove());
     }
   }
