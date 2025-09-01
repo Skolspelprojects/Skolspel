@@ -12,7 +12,6 @@
     text-align: center;
     margin: 0;
     padding: 2rem;
-    user-select: none;
   }
   #cookie {
     background-color: black;
@@ -23,14 +22,23 @@
     box-shadow: 0 0 20px #222;
     cursor: pointer;
     position: relative;
+    user-select: none;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.1s ease, box-shadow 0.1s ease;
   }
   #cookie:active {
     transform: scale(0.9);
     box-shadow: 0 0 40px #555;
+  }
+  #cookie.bump {
+    animation: bump 0.3s ease forwards;
+  }
+  @keyframes bump {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
   }
   /* Sparkle effect container */
   .sparkle {
@@ -59,16 +67,10 @@
     font-size: 2.5rem;
     margin-top: 1rem;
     letter-spacing: 2px;
-    font-variant-numeric: tabular-nums;
-    transition: transform 0.2s ease;
   }
-  #score.pop {
-    transform: scale(1.3);
-  }
-
   #upgrades {
     margin-top: 2rem;
-    max-width: 400px;
+    max-width: 500px;
     margin-left: auto;
     margin-right: auto;
   }
@@ -80,8 +82,8 @@
     margin-bottom: 1rem;
     cursor: pointer;
     transition: background 0.3s ease;
-    position: relative;
     user-select: none;
+    position: relative;
   }
   .upgrade:hover:not(.disabled) {
     background: #333;
@@ -93,22 +95,18 @@
   .upgrade-title {
     font-size: 1.2rem;
     font-weight: bold;
-    margin-bottom: 0.2rem;
   }
   .upgrade-cost {
     color: #aaa;
   }
-
-  /* Pulse animation for upgrade purchase */
-  @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.7); }
-    50% { box-shadow: 0 0 10px 6px rgba(255,255,255,0.9); }
-    100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
-  }
   .upgrade.pulse {
-    animation: pulse 0.6s ease;
+    animation: pulse 0.6s ease forwards;
   }
-
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
   #reset-btn {
     margin-top: 1.5rem;
     padding: 0.7rem 2rem;
@@ -119,6 +117,7 @@
     border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    user-select: none;
   }
   #reset-btn:hover {
     background-color: #555;
@@ -152,10 +151,20 @@
     <div>Cost: <span class="upgrade-cost" id="farm-cost">200</span> cookies</div>
     <div>Owned: <span id="farm-owned">0</span></div>
   </div>
-  <div class="upgrade" id="factory-upgrade" title="Automatically produce 50 cookies per second">
+  <div class="upgrade" id="factory-upgrade" title="Automatically produce 100 cookies per second">
     <div class="upgrade-title">Factory</div>
-    <div>Cost: <span class="upgrade-cost" id="factory-cost">1000</span> cookies</div>
+    <div>Cost: <span class="upgrade-cost" id="factory-cost">1,000</span> cookies</div>
     <div>Owned: <span id="factory-owned">0</span></div>
+  </div>
+  <div class="upgrade" id="mine-upgrade" title="Automatically produce 200 cookies per second">
+    <div class="upgrade-title">Mine</div>
+    <div>Cost: <span class="upgrade-cost" id="mine-cost">10,000</span> cookies</div>
+    <div>Owned: <span id="mine-owned">0</span></div>
+  </div>
+  <div class="upgrade" id="lab-upgrade" title="Automatically produce 1000 cookies per second">
+    <div class="upgrade-title">Lab</div>
+    <div>Cost: <span class="upgrade-cost" id="lab-cost">100,000</span> cookies</div>
+    <div>Owned: <span id="lab-owned">0</span></div>
   </div>
 </div>
 
@@ -193,7 +202,7 @@
       cost: 200,
       owned: 0,
       cps: 20,
-      costIncreaseFactor: 1.17,
+      costIncreaseFactor: 1.18,
       element: document.getElementById('farm-upgrade'),
       costElement: document.getElementById('farm-cost'),
       ownedElement: document.getElementById('farm-owned')
@@ -201,33 +210,44 @@
     factory: {
       cost: 1000,
       owned: 0,
-      cps: 50,
+      cps: 100,
       costIncreaseFactor: 1.20,
       element: document.getElementById('factory-upgrade'),
       costElement: document.getElementById('factory-cost'),
       ownedElement: document.getElementById('factory-owned')
+    },
+    mine: {
+      cost: 10000,
+      owned: 0,
+      cps: 200,
+      costIncreaseFactor: 1.22,
+      element: document.getElementById('mine-upgrade'),
+      costElement: document.getElementById('mine-cost'),
+      ownedElement: document.getElementById('mine-owned')
+    },
+    lab: {
+      cost: 100000,
+      owned: 0,
+      cps: 1000,
+      costIncreaseFactor: 1.25,
+      element: document.getElementById('lab-upgrade'),
+      costElement: document.getElementById('lab-cost'),
+      ownedElement: document.getElementById('lab-owned')
     }
   };
 
-  function formatNumber(num) {
-    return num.toLocaleString();
-  }
-
-  // Animate score briefly when it changes
-  function animateScore() {
-    scoreDisplay.classList.add('pop');
-    setTimeout(() => scoreDisplay.classList.remove('pop'), 200);
-  }
-
   function updateScoreDisplay() {
-    scoreDisplay.textContent = `${formatNumber(score)} cookie${score !== 1 ? 's' : ''}`;
-    animateScore();
+    scoreDisplay.textContent = `${score} cookie${score !== 1 ? 's' : ''}`;
+    // Bump animation on cookie count
+    scoreDisplay.classList.remove('bump');
+    void scoreDisplay.offsetWidth; // trigger reflow
+    scoreDisplay.classList.add('bump');
   }
 
   function updateUpgradeDisplays() {
     for (const key in upgrades) {
       const upgrade = upgrades[key];
-      upgrade.costElement.textContent = formatNumber(Math.floor(upgrade.cost));
+      upgrade.costElement.textContent = Math.floor(upgrade.cost).toLocaleString();
       upgrade.ownedElement.textContent = upgrade.owned;
 
       if (score >= upgrade.cost) {
@@ -238,12 +258,11 @@
     }
   }
 
-  // Save and load game data with offline progress
+  // Save and load game data with offline cookie calculation
   function saveGame() {
     const saveData = {
       score,
-      upgrades: {},
-      lastTimestamp: Date.now()
+      upgrades: {}
     };
     for (const key in upgrades) {
       saveData.upgrades[key] = {
@@ -251,6 +270,7 @@
         cost: upgrades[key].cost
       };
     }
+    saveData.lastSaved = Date.now();
     localStorage.setItem('blackClickerSave', JSON.stringify(saveData));
   }
 
@@ -259,32 +279,21 @@
     if (saved) {
       try {
         const data = JSON.parse(saved);
-
-        if (data.lastTimestamp) {
+        if (data.lastSaved) {
           const now = Date.now();
-          const elapsedSeconds = Math.floor((now - data.lastTimestamp) / 1000);
-
-          // Sum total CPS from saved upgrades
-          let offlineCPS = 0;
-          if (data.upgrades) {
-            for (const key in data.upgrades) {
-              if (upgrades[key]) {
-                offlineCPS += (upgrades[key].cps || 0) * (data.upgrades[key].owned || 0);
-              }
+          const secondsOffline = Math.floor((now - data.lastSaved) / 1000);
+          // Calculate cookies earned offline
+          let offlineCookies = 0;
+          for (const key in data.upgrades) {
+            if (upgrades[key]) {
+              offlineCookies += (upgrades[key].cps * data.upgrades[key].owned) * secondsOffline;
             }
           }
-
-          const offlineCookies = offlineCPS * elapsedSeconds;
-
-          if (offlineCookies > 0) {
-            alert(`Welcome back! You earned ${formatNumber(offlineCookies)} cookie${offlineCookies !== 1 ? 's' : ''} while you were away.`);
-          }
-
+          alert(`Welcome back! You earned ${offlineCookies.toLocaleString()} cookies while offline.`);
           score = (data.score || 0) + offlineCookies;
         } else {
           score = data.score || 0;
         }
-
         if (data.upgrades) {
           for (const key in data.upgrades) {
             if (upgrades[key]) {
@@ -294,7 +303,7 @@
           }
         }
       } catch {
-        score = 0;
+        // Ignore parse errors
       }
     }
     updateCookiesPerSecond();
@@ -311,7 +320,7 @@
     saveGame();
   });
 
-  // Buy upgrade function with animation
+  // Buy upgrade function
   function buyUpgrade(key) {
     const upgrade = upgrades[key];
     if (score >= upgrade.cost) {
@@ -321,14 +330,19 @@
       updateCookiesPerSecond();
       updateScoreDisplay();
       updateUpgradeDisplays();
+      animateUpgradePurchase(upgrade.element);
       saveGame();
-
-      // Animate upgrade purchase pulse
-      upgrade.element.classList.add('pulse');
-      setTimeout(() => upgrade.element.classList.remove('pulse'), 600);
     }
   }
 
+  // Animate upgrade purchase with pulse effect
+  function animateUpgradePurchase(element) {
+    element.classList.remove('pulse');
+    void element.offsetWidth; // trigger reflow
+    element.classList.add('pulse');
+  }
+
+  // Add event listeners to upgrades
   for (const key in upgrades) {
     upgrades[key].element.addEventListener('click', () => buyUpgrade(key));
   }
@@ -359,11 +373,13 @@
       cookiesPerSecond = 0;
       for (const key in upgrades) {
         upgrades[key].owned = 0;
-        switch (key) {
+        switch(key) {
           case 'cursor': upgrades[key].cost = 10; break;
           case 'grandma': upgrades[key].cost = 50; break;
           case 'farm': upgrades[key].cost = 200; break;
           case 'factory': upgrades[key].cost = 1000; break;
+          case 'mine': upgrades[key].cost = 10000; break;
+          case 'lab': upgrades[key].cost = 100000; break;
         }
       }
       updateScoreDisplay();
@@ -372,7 +388,7 @@
     }
   });
 
-  // Sparkle effect on click (more sparkles & varied timing)
+  // Sparkle effect on click (more sparkles & staggered timing)
   function spawnSparkles(x, y) {
     const rect = cookie.getBoundingClientRect();
     const sparkleCount = 15;
