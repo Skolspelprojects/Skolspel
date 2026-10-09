@@ -26,7 +26,34 @@
     body { margin: 0; min-width: 320px; min-height: 100vh; }
     button { color: inherit; font: inherit; }
     button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+    .seasonal-scene {
+      position: fixed;
+      inset: 76px 0 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .8s ease;
+    }
+    .seasonal-decoration {
+      position: absolute;
+      display: block;
+      color: var(--season-decoration, #d99750);
+      opacity: .17;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,.35));
+      user-select: none;
+      animation: seasonal-drift var(--decoration-duration, 9s) ease-in-out infinite alternate;
+    }
+    @keyframes seasonal-drift { to { transform: translateY(-13px) rotate(7deg); } }
+    html.theme-halloween { --gold: #ffb454; --season-decoration: #e68b38; }
+    html.theme-halloween body { background: radial-gradient(ellipse at 5% 8%, rgba(145,66,26,.19), transparent 37%), #11100f; }
+    html.theme-halloween .seasonal-scene { opacity: 1; }
+    html.theme-christmas { --gold: #c9dfad; --season-decoration: #d9f2ff; }
+    html.theme-christmas body { background: radial-gradient(ellipse at 90% 5%, rgba(39,103,116,.2), transparent 37%), #11100f; }
+    html.theme-christmas .seasonal-scene { opacity: 1; }
     .topbar {
+      position: relative;
+      z-index: 1;
       height: 76px;
       display: flex;
       align-items: center;
@@ -44,6 +71,8 @@
     .sound-button { padding: 8px 11px; border: 1px solid var(--line); border-radius: 999px; color: #f1dfc8; background: var(--panel-light); font-size: 11px; cursor: pointer; transition: color .2s ease, border-color .2s ease, background .2s ease; }
     .sound-button:hover { border-color: #b08a5d; background: #352b21; }
     main {
+      position: relative;
+      z-index: 1;
       width: min(1460px, 100%);
       margin: 0 auto;
       padding: 38px 24px 54px;
@@ -163,9 +192,9 @@
       position: fixed;
       top: -90px;
       left: 50%;
-      z-index: 20;
-      width: 76px;
-      height: 76px;
+      z-index: 40;
+      width: 84px;
+      height: 84px;
       display: grid;
       place-items: center;
       padding: 0;
@@ -187,9 +216,9 @@
       -webkit-user-select: none;
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
-      animation: treat-fall var(--fall-duration, 9s) cubic-bezier(.35,.02,.68,.98) forwards;
+      animation: treat-fall var(--fall-duration, 10s) linear forwards;
     }
-    .falling-treat:hover, .falling-treat:focus-visible, .falling-treat.pointer-near { animation-play-state: paused; filter: brightness(1.2); outline: 3px solid #fff3c8; outline-offset: 3px; }
+    .falling-treat:hover, .falling-treat:focus-visible { filter: brightness(1.2); outline: 3px solid #fff3c8; outline-offset: 3px; }
     .falling-treat:active { filter: brightness(1.35); }
     .falling-treat.type-crumb { --treat-color: #d7a062; --treat-light: #ffebc8; --treat-dark: #75421f; --treat-edge: #ffe5bb; }
     .falling-treat.type-choco { --treat-color: #74432f; --treat-light: #d8a27b; --treat-dark: #321b16; --treat-edge: #eab996; --treat-glow: rgba(191, 121, 77, .72); }
@@ -197,11 +226,11 @@
     .falling-treat.type-sugar { --treat-color: #d885bb; --treat-light: #ffe5f5; --treat-dark: #783a78; --treat-edge: #ffd4f1; --treat-glow: rgba(251, 129, 222, .78); }
     .falling-treat.type-glaze { --treat-color: #6ec8c2; --treat-light: #d8fff2; --treat-dark: #1b646a; --treat-edge: #c5fff4; --treat-glow: rgba(95, 238, 220, .78); }
     .falling-treat .falling-treat-icon { position: relative; z-index: 1; pointer-events: none; filter: drop-shadow(0 2px 2px rgba(48,24,8,.45)); }
+    .falling-treat .falling-treat-icon { animation: treat-spin var(--fall-duration, 10s) linear forwards; }
+    @keyframes treat-spin { to { transform: rotate(540deg); } }
     @keyframes treat-fall {
-      0% { top: -90px; transform: translateX(0) rotate(0deg); }
-      25% { transform: translateX(calc(var(--fall-drift, 56px) * .55)) rotate(145deg); }
-      70% { transform: translateX(calc(var(--fall-drift, 56px) * -.25)) rotate(390deg); }
-      100% { top: calc(100vh + 90px); transform: translateX(var(--fall-drift, 56px)) rotate(680deg); }
+      from { top: var(--fall-start, -90px); }
+      to { top: calc(100vh + 90px); }
     }
     .floating-number {
       position: fixed;
@@ -311,16 +340,19 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
       .falling-treat { top: min(28vh, 240px); animation: none; }
+      .falling-treat .falling-treat-icon { animation: none; }
+      .seasonal-decoration { animation: none; }
     }
   </style>
 </head>
 <body>
+  <div class="seasonal-scene" id="seasonal-scene" aria-hidden="true"></div>
   <header class="topbar">
     <div class="brand">
-      <span class="brand-mark" aria-hidden="true">🌙</span>
+      <span class="brand-mark" id="brand-mark" aria-hidden="true">🌙</span>
       <div>
         <div class="brand-name">Midnight Bakery</div>
-        <div class="brand-note">A little shop after dark</div>
+        <div class="brand-note" id="brand-note">A little shop after dark</div>
       </div>
     </div>
     <div class="topbar-actions">
@@ -438,9 +470,10 @@
       });
       let state = freshState();
       let lastFrame = Date.now();
-      let toastTimer, dropTimer;
+      let toastTimer, dropTimer, lastDropLeft = null;
       let storageAvailable = true;
       let audioContext;
+      const boostChipNodes = new Map();
       const $ = id => document.getElementById(id);
       const numberFormat = new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 });
       const shortFormat = new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 2 });
@@ -485,6 +518,63 @@
         button.textContent = state.soundEnabled ? "♪ Sound on" : "♪ Sound off";
         button.setAttribute("aria-pressed", String(state.soundEnabled));
         button.setAttribute("aria-label", state.soundEnabled ? "Turn sound off" : "Turn sound on");
+      }
+
+      function updateSeasonalTheme(date = new Date()) {
+        const month = date.getMonth();
+        const halloween = month === 9;
+        const christmas = month === 11 || (month === 0 && date.getDate() === 1);
+        const theme = halloween ? "halloween" : christmas ? "christmas" : "default";
+        const root = document.documentElement;
+        const scene = $("seasonal-scene");
+        if (root.dataset.season === theme) return;
+        root.dataset.season = theme;
+        root.classList.toggle("theme-halloween", halloween);
+        root.classList.toggle("theme-christmas", christmas);
+        scene.replaceChildren();
+        if (!halloween && !christmas) {
+          $("brand-mark").textContent = "🌙";
+          $("brand-note").textContent = "A little shop after dark";
+          return;
+        }
+
+        const decorations = halloween
+          ? [
+              { icon: "💀", left: "2%", top: "17%", size: 44 },
+              { icon: "🦴", left: "8%", top: "59%", size: 30 },
+              { icon: "🎃", left: "3%", top: "82%", size: 43 },
+              { icon: "👻", left: "16%", top: "35%", size: 36 },
+              { icon: "🕸️", left: "24%", top: "75%", size: 37 },
+              { icon: "🎃", left: "88%", top: "16%", size: 43 },
+              { icon: "💀", left: "94%", top: "43%", size: 38 },
+              { icon: "🦴", left: "83%", top: "65%", size: 30 },
+              { icon: "👻", left: "92%", top: "84%", size: 41 },
+              { icon: "🕸️", left: "74%", top: "31%", size: 35 }
+            ]
+          : [
+              { icon: "☃️", left: "2%", top: "18%", size: 44 },
+              { icon: "❄️", left: "8%", top: "58%", size: 31 },
+              { icon: "🎄", left: "3%", top: "82%", size: 43 },
+              { icon: "❄️", left: "18%", top: "34%", size: 36 },
+              { icon: "🎁", left: "24%", top: "75%", size: 37 },
+              { icon: "🎄", left: "88%", top: "16%", size: 43 },
+              { icon: "☃️", left: "94%", top: "43%", size: 38 },
+              { icon: "❄️", left: "83%", top: "65%", size: 30 },
+              { icon: "🎁", left: "92%", top: "84%", size: 41 },
+              { icon: "❄️", left: "74%", top: "31%", size: 35 }
+            ];
+        for (const [index, decoration] of decorations.entries()) {
+          const element = document.createElement("span");
+          element.className = "seasonal-decoration";
+          element.textContent = decoration.icon;
+          element.style.left = decoration.left;
+          element.style.top = decoration.top;
+          element.style.fontSize = `${decoration.size}px`;
+          element.style.setProperty("--decoration-duration", `${7 + index % 4}s`);
+          scene.append(element);
+        }
+        $("brand-mark").textContent = halloween ? "🎃" : "❄️";
+        $("brand-note").textContent = halloween ? "The haunted night shift" : "A little winter wonder";
       }
 
       function format(value) {
@@ -678,13 +768,26 @@
           { key: "sugar", label: "Sugar rush", multiplier: "Tap power ×25" },
           { key: "turbo", label: "Turbo taps", multiplier: "Tap power ×10" }
         ].filter(boost => state.boosts[boost.key].expiresAt > now);
-        list.replaceChildren(...active.map(boost => {
-          const chip = document.createElement("div");
-          chip.className = "boost-chip";
+        const activeKeys = new Set(active.map(boost => boost.key));
+        for (const [key, chip] of boostChipNodes) {
+          if (!activeKeys.has(key)) {
+            chip.remove();
+            boostChipNodes.delete(key);
+          }
+        }
+        for (const boost of active) {
+          let chip = boostChipNodes.get(boost.key);
+          if (!chip) {
+            chip = document.createElement("div");
+            chip.className = "boost-chip";
+            chip.dataset.boost = boost.key;
+            boostChipNodes.set(boost.key, chip);
+            list.append(chip);
+          }
           const seconds = Math.ceil((state.boosts[boost.key].expiresAt - now) / 1000);
-          chip.textContent = `${boost.label} · ${boost.multiplier} · ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
-          return chip;
-        }));
+          const text = `${boost.label} · ${boost.multiplier} · ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+          if (chip.textContent !== text) chip.textContent = text;
+        }
       }
 
       function showToast(message) {
@@ -750,8 +853,11 @@
         const treat = $("falling-treat");
         if (treat.hidden || treat.dataset.caught === "true" || !treat.dataset.reward) return;
         event.preventDefault();
-        treat.dataset.caught = "true";
+        event.stopPropagation();
         const bounds = treat.getBoundingClientRect();
+        treat.dataset.caught = "true";
+        treat.hidden = true;
+        treat.style.animation = "none";
         showCatchBurst(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
         let message;
         if (treat.dataset.reward === "crumb") {
@@ -776,9 +882,7 @@
           state.boosts.sugar.expiresAt = Date.now() + 2 * 60 * 1000;
           message = "Sugar rush: tap power ×25 for 2 minutes!";
         }
-        treat.hidden = true;
-        treat.style.animation = "none";
-        treat.dataset.caught = "false";
+        treat.dataset.reward = "";
         showToast(message);
         playSound("catch");
         render();
@@ -808,9 +912,12 @@
           const margin = 12;
           const cookieSize = treat.offsetWidth || 76;
           const maxLeft = Math.max(margin, viewportWidth - cookieSize - margin);
-          const left = margin + Math.random() * (maxLeft - margin);
-          const driftRange = Math.max(0, Math.min(100, left - margin, maxLeft - left));
-          const drift = (Math.random() * 2 - 1) * driftRange;
+          let left = margin + Math.random() * Math.max(0, maxLeft - margin);
+          for (let attempt = 0; attempt < 5 && lastDropLeft !== null &&
+              Math.abs(left - lastDropLeft) < Math.min(120, (maxLeft - margin) * 0.45); attempt++) {
+            left = margin + Math.random() * Math.max(0, maxLeft - margin);
+          }
+          lastDropLeft = left;
           treat.dataset.reward = selected.reward;
           treat.dataset.caught = "false";
           treat.className = `falling-treat ${selected.className}`;
@@ -821,14 +928,14 @@
           treat.replaceChildren(icon);
           treat.setAttribute("aria-label", `Catch the falling ${selected.label}`);
           treat.style.left = `${left}px`;
-          treat.style.setProperty("--fall-drift", `${drift}px`);
-          treat.style.setProperty("--fall-duration", `${7 + Math.random() * 4}s`);
+          treat.style.setProperty("--fall-start", `${-90 - Math.random() * 100}px`);
+          treat.style.setProperty("--fall-duration", `${8 + Math.random() * 4}s`);
           treat.style.animation = "none";
           treat.hidden = false;
           void treat.offsetWidth;
           treat.style.animation = "";
           scheduleLuckyTreat();
-        }, 8000 + Math.random() * 15000);
+        }, 12000 + Math.random() * 16000);
       }
 
       function saveGame(showMessage = false) {
@@ -977,18 +1084,21 @@
         saveGame();
       });
 
-      $("falling-treat").addEventListener("click", catchLuckyTreat);
+      $("falling-treat").addEventListener("click", event => {
+        if (event.detail === 0) catchLuckyTreat(event);
+      });
       $("falling-treat").addEventListener("pointerdown", event => {
-        if (event.button === 0 || event.pointerType === "touch") catchLuckyTreat(event);
-      });
-      $("falling-treat").addEventListener("pointerenter", event => {
-        if (event.pointerType === "mouse") event.currentTarget.classList.add("pointer-near");
-      });
-      $("falling-treat").addEventListener("pointerleave", event => {
-        event.currentTarget.classList.remove("pointer-near");
+        if (event.isPrimary && (event.button === 0 || event.pointerType === "touch")) {
+          event.preventDefault();
+          catchLuckyTreat(event);
+        }
       });
       $("falling-treat").addEventListener("animationend", event => {
-        if (event.animationName === "treat-fall") $("falling-treat").hidden = true;
+        if (event.animationName === "treat-fall") {
+          event.currentTarget.hidden = true;
+          event.currentTarget.dataset.caught = "true";
+          event.currentTarget.dataset.reward = "";
+        }
       });
       $("save-button").addEventListener("click", () => saveGame(true));
       $("sound-button").addEventListener("click", () => {
@@ -1033,6 +1143,7 @@
       });
 
       buildShop();
+      updateSeasonalTheme();
       loadGame();
       renderMilestones();
       render();
@@ -1049,6 +1160,7 @@
       setInterval(() => {
         if (storageAvailable) saveGame();
       }, 5000);
+      setInterval(() => updateSeasonalTheme(), 60000);
 
       document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "hidden") saveGame();
