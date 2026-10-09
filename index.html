@@ -1,415 +1,1068 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Black Clicker</title>
-<style>
-  body {
-    background-color: #111;
-    color: #eee;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    text-align: center;
-    margin: 0;
-    padding: 2rem;
-  }
-  #cookie {
-    background-color: black;
-    border-radius: 50%;
-    width: 180px;
-    height: 180px;
-    margin: 2rem auto;
-    box-shadow: 0 0 20px #222;
-    cursor: pointer;
-    position: relative;
-    user-select: none;
-    transition: transform 0.1s ease, box-shadow 0.1s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  #cookie:active {
-    transform: scale(0.9);
-    box-shadow: 0 0 40px #555;
-  }
-  #cookie.bump {
-    animation: bump 0.3s ease forwards;
-  }
-  @keyframes bump {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.15); }
-    100% { transform: scale(1); }
-  }
-  /* Sparkle effect container */
-  .sparkle {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    background: white;
-    border-radius: 50%;
-    opacity: 0.8;
-    pointer-events: none;
-    animation: sparkle-fade 700ms forwards;
-    filter: drop-shadow(0 0 2px white);
-  }
-  @keyframes sparkle-fade {
-    0% {
-      transform: translate(0, 0) scale(1);
-      opacity: 0.8;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11100f">
+  <meta name="description" content="A cozy, original incremental bakery game. Bake treats, grow your midnight bakery, and save your progress.">
+  <title>Midnight Bakery</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #11100f;
+      color: #f6eee4;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      --panel: #201d1a;
+      --panel-light: #2b2621;
+      --line: #44382e;
+      --muted: #bdb0a3;
+      --gold: #ffd083;
+      --green: #a6d3a2;
     }
-    100% {
-      transform: translate(var(--tx), var(--ty)) scale(0);
-      opacity: 0;
-    }
-  }
 
-  #score {
-    font-size: 2.5rem;
-    margin-top: 1rem;
-    letter-spacing: 2px;
-  }
-  #upgrades {
-    margin-top: 2rem;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  .upgrade {
-    background: #222;
-    border: 2px solid #444;
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    user-select: none;
-    position: relative;
-  }
-  .upgrade:hover:not(.disabled) {
-    background: #333;
-  }
-  .upgrade.disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-  .upgrade-title {
-    font-size: 1.2rem;
-    font-weight: bold;
-  }
-  .upgrade-cost {
-    color: #aaa;
-  }
-  .upgrade.pulse {
-    animation: pulse 0.6s ease forwards;
-  }
-  @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
-  }
-  #reset-btn {
-    margin-top: 1.5rem;
-    padding: 0.7rem 2rem;
-    font-size: 1rem;
-    border: none;
-    background-color: #222;
-    color: #eee;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    user-select: none;
-  }
-  #reset-btn:hover {
-    background-color: #555;
-  }
-  footer {
-    margin-top: 3rem;
-    font-size: 0.9rem;
-    color: #555;
-  }
-</style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; min-height: 100vh; }
+    button { color: inherit; font: inherit; }
+    button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+    .topbar {
+      height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(18px, 4vw, 58px);
+      border-bottom: 1px solid var(--line);
+      background: #151311;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark { font-size: 28px; }
+    .brand-name { font-size: 16px; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+    .brand-note { color: var(--muted); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+    .save-status { color: var(--muted); font-size: 12px; }
+    .topbar-actions { display: flex; align-items: center; gap: 12px; }
+    .sound-button { padding: 8px 11px; border: 1px solid var(--line); border-radius: 999px; color: #f1dfc8; background: var(--panel-light); font-size: 11px; cursor: pointer; transition: color .2s ease, border-color .2s ease, background .2s ease; }
+    .sound-button:hover { border-color: #b08a5d; background: #352b21; }
+    main {
+      width: min(1460px, 100%);
+      margin: 0 auto;
+      padding: 38px 24px 54px;
+      display: grid;
+      grid-template-columns: minmax(190px, .72fr) minmax(320px, 1fr) minmax(330px, .9fr);
+      gap: 18px;
+      align-items: start;
+    }
+    .panel {
+      border: 1px solid var(--line);
+      background: linear-gradient(155deg, #25211d, var(--panel) 55%);
+      border-radius: 12px;
+      overflow: hidden;
+      animation: panel-arrive .55s cubic-bezier(.2,.75,.25,1) both;
+    }
+    main > .panel:nth-child(2) { animation-delay: 70ms; }
+    main > .panel:nth-child(3) { animation-delay: 140ms; }
+    @keyframes panel-arrive { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .panel-heading {
+      margin: 0;
+      padding: 19px 20px 15px;
+      font-size: 12px;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+      color: #f3dfc8;
+    }
+    .stats { padding: 0 19px 18px; }
+    .stat { padding: 14px 0; border-top: 1px solid var(--line); }
+    .stat-label { color: var(--muted); font-size: 12px; }
+    .stat-value { margin-top: 5px; font-size: 20px; font-weight: 700; }
+    .stat-value small { color: var(--muted); font-size: 12px; font-weight: 500; }
+    .milestone-list { display: grid; gap: 8px; padding: 0 16px 17px; }
+    .milestone {
+      padding: 10px 11px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+      animation: panel-arrive .35s ease both;
+    }
+    .milestone strong { display: block; margin-bottom: 2px; color: #e7d8c8; font-size: 12px; }
+    .milestone.empty { border-style: dashed; }
+    .bakery {
+      min-height: 530px;
+      padding: 35px 20px 29px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      background:
+        radial-gradient(ellipse at 50% 47%, rgba(152, 99, 58, .18), transparent 53%),
+        var(--panel);
+    }
+    .eyebrow { color: var(--gold); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; }
+    .balance { margin: 9px 0 0; font-size: clamp(34px, 4vw, 50px); line-height: 1.1; font-weight: 760; letter-spacing: -.045em; }
+    .balance-label { margin: 7px 0 0; color: var(--muted); font-size: 14px; }
+    .bake-button {
+      width: 214px;
+      height: 214px;
+      margin: 26px 0 17px;
+      border: 0;
+      border-radius: 50%;
+      cursor: pointer;
+      color: #f6dfba;
+      font-size: 88px;
+      text-shadow: 0 5px 9px rgba(0, 0, 0, .45);
+      background:
+        radial-gradient(circle at 34% 27%, #a86738 0 4px, transparent 5px),
+        radial-gradient(circle at 64% 36%, #452516 0 5px, transparent 6px),
+        radial-gradient(circle at 43% 63%, #512a17 0 5px, transparent 6px),
+        radial-gradient(circle at 67% 68%, #b87540 0 4px, transparent 5px),
+        radial-gradient(circle at 28% 53%, #512a17 0 4px, transparent 5px),
+        radial-gradient(circle at 58% 20%, #512a17 0 3px, transparent 4px),
+        radial-gradient(circle at 50% 48%, #c98950 0, #a76538 56%, #704126 76%, #50301f 100%);
+      box-shadow: 0 12px 0 #352419, 0 20px 35px rgba(0, 0, 0, .42), inset 0 3px 9px rgba(255, 224, 177, .32);
+      transition: transform .22s cubic-bezier(.2,.8,.2,1), filter .22s ease, box-shadow .22s ease;
+      -webkit-tap-highlight-color: transparent;
+      position: relative;
+    }
+    .bake-button::after {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border: 1px solid rgba(255, 231, 195, .23);
+      border-radius: inherit;
+      pointer-events: none;
+    }
+    .bake-button:hover { filter: brightness(1.08); transform: translateY(-3px) scale(1.015); }
+    .bake-button:active, .bake-button.pressed { transform: translateY(5px) scale(.975); box-shadow: 0 5px 0 #352419, 0 12px 22px rgba(0, 0, 0, .4); }
+    .bake-button.tap-pop { animation: pastry-pop .26s cubic-bezier(.2,.75,.25,1); }
+    @keyframes pastry-pop { 45% { transform: translateY(-6px) scale(1.045); filter: brightness(1.14); } }
+    .click-help { color: var(--muted); font-size: 13px; }
+    .click-help strong { color: #ead6bf; }
+    .production-line { margin-top: 13px; color: var(--green); font-size: 12px; }
+    .boost-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; min-height: 0; margin-top: 12px; }
+    .boost-chip { padding: 7px 10px; border: 1px solid #82653c; border-radius: 999px; color: #ffe1a6; background: rgba(113, 78, 36, .25); font-size: 11px; }
+    .shop-panel > .panel-heading { position: sticky; top: 0; z-index: 1; background: #201d1a; border-bottom: 1px solid var(--line); }
+    .shop-list { max-height: 43vh; overflow-y: auto; scrollbar-color: #75604c transparent; }
+    .shop-button.affordable, .upgrade-button.affordable, .dimension-button.affordable { border-color: #82653c; }
+    .upgrade-list { max-height: 34vh; overflow-y: auto; scrollbar-color: #75604c transparent; }
+    .upgrade-group { display: grid; gap: 8px; }
+    .upgrade-group[hidden], .falling-treat[hidden] { display: none; }
+    .upgrade-group-title { position: sticky; top: 0; padding: 7px 3px 2px; background: var(--panel); color: var(--gold); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+    .dimension-panel { margin: 0 12px 14px; padding: 13px; border: 1px solid #675134; border-radius: 11px; background: linear-gradient(130deg, rgba(94, 69, 37, .34), rgba(40, 34, 28, .5)); }
+    .dimension-title { color: #ffe1a6; font-size: 13px; font-weight: 700; }
+    .dimension-description { margin-top: 5px; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .dimension-button { width: 100%; margin-top: 10px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-light); cursor: pointer; text-align: left; font-size: 11px; }
+    .dimension-button { transition: transform .2s ease, border-color .2s ease, background .2s ease; }
+    .dimension-button:hover:not(:disabled) { transform: translateY(-1px); border-color: #b08a5d; background: #352b21; }
+    .dimension-button:disabled { cursor: not-allowed; opacity: .5; }
+    .dimension-button + .dimension-button { margin-top: 7px; }
+    .dimension-note { margin-top: 8px; color: var(--gold); font-size: 11px; }
+    .falling-treat {
+      position: fixed;
+      top: -90px;
+      left: 50%;
+      z-index: 20;
+      width: 76px;
+      height: 76px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      appearance: none;
+      -webkit-appearance: none;
+      border: 2px solid var(--treat-edge, rgba(255, 225, 166, .9));
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 35% 29%, rgba(255,255,255,.72) 0 3px, transparent 4px),
+        radial-gradient(circle at 69% 62%, rgba(59,29,14,.6) 0 4px, transparent 5px),
+        radial-gradient(circle at 34% 69%, rgba(59,29,14,.48) 0 3px, transparent 4px),
+        radial-gradient(circle at 50% 45%, var(--treat-light, #ffeab4), var(--treat-color, #dc973c) 63%, var(--treat-dark, #854319));
+      box-shadow: 0 0 23px var(--treat-glow, rgba(255, 191, 79, .7)), inset 0 2px 7px rgba(255, 255, 255, .55), 0 5px 12px rgba(0,0,0,.35);
+      color: #fff2c8;
+      font-size: 32px;
+      cursor: pointer;
+      pointer-events: auto;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      animation: treat-fall var(--fall-duration, 9s) cubic-bezier(.35,.02,.68,.98) forwards;
+    }
+    .falling-treat:hover, .falling-treat:focus-visible, .falling-treat.pointer-near { animation-play-state: paused; filter: brightness(1.2); outline: 3px solid #fff3c8; outline-offset: 3px; }
+    .falling-treat:active { filter: brightness(1.35); }
+    .falling-treat.type-crumb { --treat-color: #d7a062; --treat-light: #ffebc8; --treat-dark: #75421f; --treat-edge: #ffe5bb; }
+    .falling-treat.type-choco { --treat-color: #74432f; --treat-light: #d8a27b; --treat-dark: #321b16; --treat-edge: #eab996; --treat-glow: rgba(191, 121, 77, .72); }
+    .falling-treat.type-star { --treat-color: #d6a526; --treat-light: #fff3a8; --treat-dark: #805413; --treat-edge: #fff4ae; --treat-glow: rgba(255, 221, 95, .85); }
+    .falling-treat.type-sugar { --treat-color: #d885bb; --treat-light: #ffe5f5; --treat-dark: #783a78; --treat-edge: #ffd4f1; --treat-glow: rgba(251, 129, 222, .78); }
+    .falling-treat.type-glaze { --treat-color: #6ec8c2; --treat-light: #d8fff2; --treat-dark: #1b646a; --treat-edge: #c5fff4; --treat-glow: rgba(95, 238, 220, .78); }
+    .falling-treat .falling-treat-icon { position: relative; z-index: 1; pointer-events: none; filter: drop-shadow(0 2px 2px rgba(48,24,8,.45)); }
+    @keyframes treat-fall {
+      0% { top: -90px; transform: translateX(0) rotate(0deg); }
+      25% { transform: translateX(calc(var(--fall-drift, 56px) * .55)) rotate(145deg); }
+      70% { transform: translateX(calc(var(--fall-drift, 56px) * -.25)) rotate(390deg); }
+      100% { top: calc(100vh + 90px); transform: translateX(var(--fall-drift, 56px)) rotate(680deg); }
+    }
+    .floating-number {
+      position: fixed;
+      z-index: 6;
+      pointer-events: none;
+      color: #ffe2a0;
+      font-size: 17px;
+      font-weight: 800;
+      text-shadow: 0 2px 6px #24140a;
+      animation: float-up .9s ease-out forwards;
+    }
+    @keyframes float-up { to { transform: translateY(-55px); opacity: 0; } }
+    .catch-burst {
+      position: fixed;
+      z-index: 21;
+      pointer-events: none;
+      color: #fff0ba;
+      font-size: 28px;
+      text-shadow: 0 0 16px rgba(255, 200, 96, .85);
+      animation: catch-burst .42s cubic-bezier(.16,.72,.3,1) forwards;
+    }
+    @keyframes catch-burst {
+      0% { opacity: 1; transform: translate(-50%,-50%) scale(.45) rotate(-20deg); }
+      65% { opacity: 1; transform: translate(-50%,-75%) scale(1.2) rotate(12deg); }
+      100% { opacity: 0; transform: translate(-50%,-125%) scale(.75) rotate(22deg); }
+    }
+    .boost-chip { animation: boost-arrive .38s cubic-bezier(.2,.75,.25,1) both; }
+    @keyframes boost-arrive { from { opacity: 0; transform: translateY(5px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .section-divider { height: 1px; margin: 0 18px; background: var(--line); }
+    .shop-list, .upgrade-list { display: grid; gap: 9px; padding: 0 12px 14px; }
+    .shop-button, .upgrade-button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 11px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      text-align: left;
+      background: var(--panel-light);
+      cursor: pointer;
+      transition: border-color .2s ease, background .2s ease, opacity .2s ease, transform .2s cubic-bezier(.2,.75,.25,1), box-shadow .2s ease;
+    }
+    .shop-button:hover:not(:disabled), .upgrade-button:hover:not(:disabled) { border-color: #b08a5d; background: #332b23; transform: translateY(-2px); box-shadow: 0 5px 14px rgba(0,0,0,.18); }
+    .shop-button:active:not(:disabled), .upgrade-button:active:not(:disabled), .dimension-button:active:not(:disabled) { transform: scale(.985); }
+    .shop-button.purchase-pop, .upgrade-button.purchase-pop { animation: purchase-pop .38s cubic-bezier(.2,.75,.25,1); }
+    @keyframes purchase-pop { 45% { border-color: #ffe1a6; background: #423524; box-shadow: 0 0 18px rgba(255,208,131,.22); } }
+    .shop-button:disabled, .upgrade-button:disabled { cursor: not-allowed; opacity: .48; }
+    .item-icon { width: 35px; flex: 0 0 35px; text-align: center; font-size: 25px; }
+    .item-info { min-width: 0; flex: 1; }
+    .item-name { font-size: 13px; font-weight: 680; }
+    .item-description { margin-top: 3px; color: var(--muted); font-size: 11px; line-height: 1.35; }
+    .item-count { min-width: 25px; color: var(--gold); text-align: right; font-size: 17px; font-weight: 700; }
+    .item-cost { margin-top: 4px; color: var(--gold); font-size: 11px; }
+    .upgrade-section { margin-top: 13px; }
+    .section-heading { margin: 0; padding: 16px 19px 12px; color: #f3dfc8; font-size: 12px; letter-spacing: .13em; text-transform: uppercase; }
+    .upgrade-button { gap: 9px; }
+    .upgrade-button[hidden] { display: none; }
+    .upgrade-button .item-icon { width: 28px; flex-basis: 28px; font-size: 21px; }
+    .upgrade-button.purchased { border-color: rgba(166, 211, 162, .4); }
+    .utility-row { display: flex; justify-content: flex-end; gap: 8px; padding: 0 12px 14px; }
+    .utility-button {
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .utility-button:hover { color: #fff; border-color: #86725d; }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 26px;
+      z-index: 2;
+      transform: translate(-50%, 15px);
+      opacity: 0;
+      pointer-events: none;
+      max-width: calc(100vw - 32px);
+      padding: 11px 16px;
+      border: 1px solid #65503a;
+      border-radius: 10px;
+      background: #28221c;
+      color: #f3dfc8;
+      font-size: 13px;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, .4);
+      transition: opacity .2s ease, transform .2s ease;
+    }
+    .toast.visible { transform: translate(-50%, 0); opacity: 1; }
+    @media (max-width: 900px) {
+      main { grid-template-columns: minmax(180px, .72fr) minmax(280px, 1.2fr); }
+      .shop-panel { grid-column: 1 / -1; }
+      .shop-list { max-height: 42vh; }
+    }
+    @media (max-width: 620px) {
+      .topbar { height: 66px; }
+      .brand-note { display: none; }
+      main { grid-template-columns: 1fr; gap: 14px; padding: 19px 14px 34px; }
+      .bakery { grid-row: 1; min-height: 420px; }
+      .bake-button { width: 188px; height: 188px; font-size: 77px; }
+      .shop-panel { grid-column: auto; display: block; }
+      .shop-list { max-height: 45vh; }
+      .stats { display: grid; grid-template-columns: 1fr 1fr; column-gap: 18px; }
+      .stats .stat:nth-child(2) { border-top: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+      .falling-treat { top: min(28vh, 240px); animation: none; }
+    }
+  </style>
 </head>
 <body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">🌙</span>
+      <div>
+        <div class="brand-name">Midnight Bakery</div>
+        <div class="brand-note">A little shop after dark</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="sound-button" id="sound-button" type="button" aria-pressed="true">♪ Sound on</button>
+      <div class="save-status" id="save-status" role="status" aria-live="polite">Your game saves automatically</div>
+    </div>
+  </header>
 
-<h1>Black Clicker</h1>
-<div id="cookie" title="Click me!"></div>
-<div id="score">0 cookies</div>
+  <main>
+    <aside class="panel" aria-label="Bakery statistics">
+      <h2 class="panel-heading">Your bakery</h2>
+      <div class="stats">
+        <div class="stat"><div class="stat-label">Baked all time</div><div class="stat-value" id="total-baked">0</div></div>
+        <div class="stat"><div class="stat-label">Per second</div><div class="stat-value" id="production-rate">0 <small>/ sec</small></div></div>
+        <div class="stat"><div class="stat-label">Per tap</div><div class="stat-value" id="tap-power">1 <small>/ tap</small></div></div>
+        <div class="stat"><div class="stat-label">Bakers hired</div><div class="stat-value" id="staff-total">0</div></div>
+        <div class="stat"><div class="stat-label">Dream shards</div><div class="stat-value" id="shard-total">0</div></div>
+      </div>
+      <div class="section-divider"></div>
+      <h2 class="section-heading">Little victories</h2>
+      <div class="milestone-list" id="milestones" aria-live="polite"></div>
+    </aside>
 
-<div id="upgrades">
-  <div class="upgrade" id="cursor-upgrade" title="Automatically click 5 cookies per second">
-    <div class="upgrade-title">Cursor</div>
-    <div>Cost: <span class="upgrade-cost" id="cursor-cost">10</span> cookies</div>
-    <div>Owned: <span id="cursor-owned">0</span></div>
-  </div>
-  <div class="upgrade" id="grandma-upgrade" title="Automatically produce 20 cookies per second">
-    <div class="upgrade-title">Grandma</div>
-    <div>Cost: <span class="upgrade-cost" id="grandma-cost">50</span> cookies</div>
-    <div>Owned: <span id="grandma-owned">0</span></div>
-  </div>
-  <div class="upgrade" id="farm-upgrade" title="Automatically produce 100 cookies per second">
-    <div class="upgrade-title">Farm</div>
-    <div>Cost: <span class="upgrade-cost" id="farm-cost">200</span> cookies</div>
-    <div>Owned: <span id="farm-owned">0</span></div>
-  </div>
-  <div class="upgrade" id="factory-upgrade" title="Automatically produce 500 cookies per second">
-    <div class="upgrade-title">Factory</div>
-    <div>Cost: <span class="upgrade-cost" id="factory-cost">1,000</span> cookies</div>
-    <div>Owned: <span id="factory-owned">0</span></div>
-  </div>
-  <div class="upgrade" id="mine-upgrade" title="Automatically produce 1000 cookies per second">
-    <div class="upgrade-title">Mine</div>
-    <div>Cost: <span class="upgrade-cost" id="mine-cost">10,000</span> cookies</div>
-    <div>Owned: <span id="mine-owned">0</span></div>
-  </div>
-  <div class="upgrade" id="lab-upgrade" title="Automatically produce 5000 cookies per second">
-    <div class="upgrade-title">Lab</div>
-    <div>Cost: <span class="upgrade-cost" id="lab-cost">100,000</span> cookies</div>
-    <div>Owned: <span id="lab-owned">0</span></div>
-  </div>
-</div>
+    <section class="panel bakery" aria-label="Bake treats">
+      <div class="eyebrow">Fresh from the night shift</div>
+      <div class="balance" id="balance" aria-live="polite">0</div>
+      <p class="balance-label">warm treats in the pantry</p>
+      <button class="bake-button" id="bake-button" type="button" aria-label="Bake one treat">✦</button>
+      <div class="click-help">Tap the pastry to bake <strong id="tap-preview">1 treat</strong></div>
+      <div class="production-line" id="production-summary">Your ovens are waiting for their first order.</div>
+      <div class="boost-list" id="boost-list" aria-live="polite"></div>
+      <p class="click-help">A lucky falling treat may appear now and then. Catch it!</p>
+    </section>
 
-<button id="reset-btn">Reset Game</button>
+    <section class="panel shop-panel" aria-label="Bakery shop">
+      <h2 class="panel-heading">Grow the bakery</h2>
+      <h3 class="section-heading">Your production chain</h3>
+      <div class="shop-list" id="shop-list"></div>
+      <div class="upgrade-section">
+        <h3 class="section-heading">Research &amp; machinery upgrades</h3>
+        <div class="upgrade-list" id="upgrade-list"></div>
+      </div>
+      <section class="dimension-panel" aria-label="Dream dimension">
+        <div class="dimension-title">✧ The Dream Dimension</div>
+        <div class="dimension-description" id="dimension-description">Reach a billion treats in one run to cross over. Your lifetime bakery record will remain.</div>
+        <button class="dimension-button" id="ascend-button" type="button" hidden></button>
+        <button class="dimension-button" id="shard-upgrade" type="button"></button>
+        <div class="dimension-note" id="dimension-note" aria-live="polite"></div>
+      </section>
+      <div class="utility-row">
+        <button class="utility-button" id="save-button" type="button">Save now</button>
+        <button class="utility-button" id="reset-button" type="button">Start over</button>
+      </div>
+    </section>
+  </main>
+  <button class="falling-treat" id="falling-treat" type="button" aria-label="Catch a falling treat" hidden>🍪</button>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<footer>Made by Gustav</footer>
+  <script>
+    (() => {
+      "use strict";
 
-<script>
-  let score = 0;
-  let cookiesPerSecond = 0;
+      const SAVE_KEY = "midnight-bakery-save-v1";
+      const buildings = [
+        { id: "helper", name: "Kitchen helper", icon: "🧑‍🍳", description: "A pair of quick, floury hands.", baseCost: 15, production: 0.1 },
+        { id: "oven", name: "Copper oven", icon: "🔥", description: "Keeps a steady batch coming.", baseCost: 100, production: 1 },
+        { id: "cart", name: "Night cart", icon: "🛒", description: "Takes warm treats around town.", baseCost: 1100, production: 8 },
+        { id: "workshop", name: "Pastry workshop", icon: "🏠", description: "A whole room of rolling pins.", baseCost: 12000, production: 47 },
+        { id: "moonlight", name: "Moonlight mixer", icon: "🌙", description: "Stirs dough while you dream.", baseCost: 130000, production: 260 },
+        { id: "airship", name: "Cloudship bakery", icon: "🚀", description: "Delivers snacks above the clouds.", baseCost: 1400000, production: 1400 },
+        { id: "portal", name: "Time-fold portal", icon: "🌀", description: "Bakes yesterday's batch today.", baseCost: 20000000, production: 7800 },
+        { id: "starforge", name: "Starforge", icon: "☄️", description: "Forges pastries from starlight.", baseCost: 330000000, production: 44000 },
+        { id: "dreamgarden", name: "Dream garden", icon: "🪷", description: "Grows impossible ingredients.", baseCost: 5100000000, production: 260000 },
+        { id: "nebula", name: "Nebula foundry", icon: "🌌", description: "Shapes whole clouds into snacks.", baseCost: 75000000000, production: 1600000 },
+        { id: "constellation", name: "Constellation kitchen", icon: "✨", description: "Connects a thousand tiny bakeries.", baseCost: 1100000000000, production: 10000000 },
+        { id: "multiverse", name: "Multiverse oven", icon: "♾️", description: "Bakes in realities without end.", baseCost: 17000000000000, production: 65000000 }
+      ];
+      const recipes = [
+        { id: "sure-grip", name: "Sure-grip oven mitts", icon: "🧤", description: "Double treats from every tap.", cost: 50, unlockAt: 25, effect: "tap" },
+        { id: "extra-fold", name: "The extra fold", icon: "🥐", description: "Double treats from every tap.", cost: 500, unlockAt: 200, effect: "tap" },
+        { id: "warm-shelves", name: "Warm storage shelves", icon: "🪵", description: "Double output from every bakery.", cost: 1200, unlockAt: 800, effect: "production" },
+        { id: "spiced-dough", name: "Midnight spice blend", icon: "✨", description: "Double treats from every tap.", cost: 5000, unlockAt: 3000, effect: "tap" },
+        { id: "double-shift", name: "The second shift", icon: "🕯️", description: "Double output from every bakery.", cost: 15000, unlockAt: 10000, effect: "production" },
+        { id: "star-flour", name: "Star-milled flour", icon: "🌟", description: "Double output from every bakery.", cost: 175000, unlockAt: 100000, effect: "production" },
+        { id: "dream-recipe", name: "Dreamer's recipe book", icon: "📖", description: "Double treats from every tap.", cost: 250000, unlockAt: 180000, effect: "tap" },
+        { id: "sugar-geometry", name: "Sugar geometry", icon: "🔷", description: "Double output from every bakery.", cost: 3000000, unlockAt: 2000000, effect: "production" },
+        { id: "comet-cocoa", name: "Comet cocoa", icon: "☄️", description: "Double treats from every tap.", cost: 25000000, unlockAt: 18000000, effect: "tap" },
+        { id: "infinite-fold", name: "The infinite fold", icon: "♾️", description: "Double output from every bakery.", cost: 1000000000, unlockAt: 750000000, effect: "production" }
+      ];
+      const upgradeMilestones = [1, 10, 25, 50, 100, 200, 500, 1000];
+      const buildingUpgrades = buildings.flatMap(building => upgradeMilestones.map((owned, level) => ({
+        id: `${building.id}-upgrade-${level}`,
+        buildingId: building.id,
+        level,
+        owned,
+        name: `${building.name}: ${["Improved tools", "Double shift", "Precision craft", "Master class", "Grand design", "Starlight tuning", "Dream engine", "Infinite craft"][level]}`,
+        icon: ["🛠️", "⚙️", "🧰", "📐", "💎", "🌠", "🔮", "♾️"][level],
+        cost: building.baseCost * 8 * Math.pow(10, level)
+      })));
+      const milestones = [
+        { id: "first-batch", title: "First warm batch", description: "Bake 25 treats.", target: 25 },
+        { id: "busy-night", title: "A busy night", description: "Bake 1,000 treats.", target: 1000 },
+        { id: "town-favorite", title: "Town favorite", description: "Bake 100,000 treats.", target: 100000 },
+        { id: "bakery-legend", title: "Bakery in the clouds", description: "Bake 10 million treats.", target: 10000000 }
+      ];
 
-  const cookie = document.getElementById('cookie');
-  const scoreDisplay = document.getElementById('score');
+      const freshState = () => ({
+        balance: 0, totalBaked: 0, runBaked: 0,
+        buildings: Object.fromEntries(buildings.map(item => [item.id, 0])),
+        buildingUpgrades: [], recipes: [], milestones: [], dreamShards: 0,
+        dimensionLevels: 0, prestigeCount: 0,
+        boosts: { golden: { expiresAt: 0 }, sugar: { expiresAt: 0 }, turbo: { expiresAt: 0 } },
+        soundEnabled: true,
+        lastSaved: Date.now()
+      });
+      let state = freshState();
+      let lastFrame = Date.now();
+      let toastTimer, dropTimer;
+      let storageAvailable = true;
+      let audioContext;
+      const $ = id => document.getElementById(id);
+      const numberFormat = new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 });
+      const shortFormat = new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 2 });
 
-  const upgrades = {
-    cursor: {
-      cost: 10,
-      owned: 0,
-      cps: 5,            // increased from 1 to 5
-      costIncreaseFactor: 1.12, // reduced from 1.15
-      element: document.getElementById('cursor-upgrade'),
-      costElement: document.getElementById('cursor-cost'),
-      ownedElement: document.getElementById('cursor-owned')
-    },
-    grandma: {
-      cost: 50,
-      owned: 0,
-      cps: 20,           // increased from 5 to 20
-      costIncreaseFactor: 1.12,
-      element: document.getElementById('grandma-upgrade'),
-      costElement: document.getElementById('grandma-cost'),
-      ownedElement: document.getElementById('grandma-owned')
-    },
-    farm: {
-      cost: 200,
-      owned: 0,
-      cps: 100,          // increased from 20 to 100
-      costIncreaseFactor: 1.15, // reduced from 1.18
-      element: document.getElementById('farm-upgrade'),
-      costElement: document.getElementById('farm-cost'),
-      ownedElement: document.getElementById('farm-owned')
-    },
-    factory: {
-      cost: 1000,
-      owned: 0,
-      cps: 500,          // increased from 100 to 500
-      costIncreaseFactor: 1.18, // reduced from 1.20
-      element: document.getElementById('factory-upgrade'),
-      costElement: document.getElementById('factory-cost'),
-      ownedElement: document.getElementById('factory-owned')
-    },
-    mine: {
-      cost: 10000,
-      owned: 0,
-      cps: 1000,         // increased from 200 to 1000
-      costIncreaseFactor: 1.20, // reduced from 1.22
-      element: document.getElementById('mine-upgrade'),
-      costElement: document.getElementById('mine-cost'),
-      ownedElement: document.getElementById('mine-owned')
-    },
-    lab: {
-      cost: 100000,
-      owned: 0,
-      cps: 5000,         // increased from 1000 to 5000
-      costIncreaseFactor: 1.20, // reduced from 1.25
-      element: document.getElementById('lab-upgrade'),
-      costElement: document.getElementById('lab-cost'),
-      ownedElement: document.getElementById('lab-owned')
-    }
-  };
+      function playSound(kind) {
+        if (!state.soundEnabled) return;
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
 
-  function updateScoreDisplay() {
-    scoreDisplay.textContent = `${score} cookie${score !== 1 ? 's' : ''}`;
-    // Bump animation on cookie count
-    scoreDisplay.classList.remove('bump');
-    void scoreDisplay.offsetWidth; // trigger reflow
-    scoreDisplay.classList.add('bump');
-  }
-
-  function updateUpgradeDisplays() {
-    for (const key in upgrades) {
-      const upgrade = upgrades[key];
-      upgrade.costElement.textContent = Math.floor(upgrade.cost).toLocaleString();
-      upgrade.ownedElement.textContent = upgrade.owned;
-
-      if (score >= upgrade.cost) {
-        upgrade.element.classList.remove('disabled');
-      } else {
-        upgrade.element.classList.add('disabled');
+        try {
+          audioContext = audioContext || new AudioContextClass();
+          if (audioContext.state === "suspended") audioContext.resume().catch(error => {
+            console.warn("Could not resume bakery sounds.", error);
+          });
+          const now = audioContext.currentTime;
+          const notes = kind === "catch" ? [660, 880, 1100]
+            : kind === "purchase" ? [392, 587]
+            : kind === "toggle" ? [520, 740]
+            : [520, 410];
+          notes.forEach((frequency, index) => {
+            const oscillator = audioContext.createOscillator();
+            const envelope = audioContext.createGain();
+            oscillator.type = kind === "click" ? "sine" : "triangle";
+            const startFrequency = kind === "click" ? frequency * 1.25 : frequency;
+            oscillator.frequency.setValueAtTime(startFrequency, now + index * 0.035);
+            oscillator.frequency.exponentialRampToValueAtTime(frequency, now + index * 0.035 + 0.12);
+            envelope.gain.setValueAtTime(0.0001, now + index * 0.035);
+            envelope.gain.exponentialRampToValueAtTime(kind === "click" ? 0.026 : 0.018, now + index * 0.035 + 0.012);
+            envelope.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.035 + 0.15);
+            oscillator.connect(envelope);
+            envelope.connect(audioContext.destination);
+            oscillator.start(now + index * 0.035);
+            oscillator.stop(now + index * 0.035 + 0.16);
+          });
+        } catch (error) {
+          console.warn("Could not play bakery sound.", error);
+        }
       }
-    }
-  }
 
-  // Save and load game data with offline cookie calculation
-  function saveGame() {
-    const saveData = {
-      score,
-      upgrades: {}
-    };
-    for (const key in upgrades) {
-      saveData.upgrades[key] = {
-        owned: upgrades[key].owned,
-        cost: upgrades[key].cost
-      };
-    }
-    saveData.lastSaved = Date.now();
-    localStorage.setItem('blackClickerSave', JSON.stringify(saveData));
-  }
+      function updateSoundButton() {
+        const button = $("sound-button");
+        button.textContent = state.soundEnabled ? "♪ Sound on" : "♪ Sound off";
+        button.setAttribute("aria-pressed", String(state.soundEnabled));
+        button.setAttribute("aria-label", state.soundEnabled ? "Turn sound off" : "Turn sound on");
+      }
 
-  function loadGame() {
-    const saved = localStorage.getItem('blackClickerSave');
-    if (saved) {
-      try {
-        const data = JSON.parse(saved);
-        if (data.lastSaved) {
-          const now = Date.now();
-          const secondsOffline = Math.floor((now - data.lastSaved) / 1000);
-          // Calculate cookies earned offline
-          let offlineCookies = 0;
-          for (const key in data.upgrades) {
-            if (upgrades[key]) {
-              offlineCookies += (upgrades[key].cps * data.upgrades[key].owned) * secondsOffline;
-            }
+      function format(value) {
+        if (value >= 1000000) return shortFormat.format(value);
+        return numberFormat.format(value);
+      }
+
+      function productionRate() {
+        const recipeMultiplier = Math.pow(2, state.recipes.filter(id => {
+          const recipe = recipes.find(item => item.id === id);
+          return recipe && recipe.effect === "production";
+        }).length);
+        const upgradeMultiplier = buildings.reduce((sum, item) => {
+          const levels = state.buildingUpgrades.filter(id => id.startsWith(`${item.id}-upgrade-`)).length;
+          return sum + state.buildings[item.id] * item.production * Math.pow(2, levels);
+        }, 0);
+        const boostMultiplier = state.boosts.golden.expiresAt > Date.now() ? 7 : 1;
+        return upgradeMultiplier * recipeMultiplier * Math.pow(1.5, state.dimensionLevels) * boostMultiplier;
+      }
+
+      function baseProductionRate() {
+        const recipeMultiplier = Math.pow(2, state.recipes.filter(id => {
+          const recipe = recipes.find(item => item.id === id);
+          return recipe && recipe.effect === "production";
+        }).length);
+        const upgradeMultiplier = buildings.reduce((sum, item) => {
+          const levels = state.buildingUpgrades.filter(id => id.startsWith(`${item.id}-upgrade-`)).length;
+          return sum + state.buildings[item.id] * item.production * Math.pow(2, levels);
+        }, 0);
+        return upgradeMultiplier * recipeMultiplier * Math.pow(1.5, state.dimensionLevels);
+      }
+
+      function tapPower() {
+        const recipeMultiplier = Math.pow(2, state.recipes.filter(id => {
+          const recipe = recipes.find(item => item.id === id);
+          return recipe && recipe.effect === "tap";
+        }).length);
+        const boostMultiplier = state.boosts.sugar.expiresAt > Date.now() ? 25 : 1;
+        const turboMultiplier = state.boosts.turbo.expiresAt > Date.now() ? 10 : 1;
+        return recipeMultiplier * boostMultiplier * turboMultiplier;
+      }
+
+      function buildingCost(item) {
+        return Math.ceil(item.baseCost * Math.pow(1.15, state.buildings[item.id]));
+      }
+
+      function buildShop() {
+        const shop = $("shop-list");
+        for (const item of buildings) {
+          const button = document.createElement("button");
+          button.className = "shop-button";
+          button.type = "button";
+          button.dataset.building = item.id;
+          button.innerHTML = `<span class="item-icon" aria-hidden="true">${item.icon}</span>
+            <span class="item-info"><span class="item-name">${item.name}</span>
+            <span class="item-description">${item.description} +${format(item.production)} / sec</span>
+            <span class="item-cost"></span></span><span class="item-count"></span>`;
+          shop.append(button);
+        }
+
+        const upgradeList = $("upgrade-list");
+        for (const recipe of recipes) {
+          const button = document.createElement("button");
+          button.className = "upgrade-button";
+          button.type = "button";
+          button.dataset.recipe = recipe.id;
+          button.innerHTML = `<span class="item-icon" aria-hidden="true">${recipe.icon}</span>
+            <span class="item-info"><span class="item-name">${recipe.name}</span>
+            <span class="item-description">${recipe.description}</span><span class="item-cost"></span></span>`;
+          upgradeList.append(button);
+        }
+        for (const item of buildings) {
+          const group = document.createElement("div");
+          group.className = "upgrade-group";
+          group.dataset.upgradeGroup = item.id;
+          const heading = document.createElement("div");
+          heading.className = "upgrade-group-title";
+          heading.textContent = item.name;
+          group.append(heading);
+          for (const upgrade of buildingUpgrades.filter(entry => entry.buildingId === item.id)) {
+            const button = document.createElement("button");
+            button.className = "upgrade-button";
+            button.type = "button";
+            button.dataset.buildingUpgrade = upgrade.id;
+            button.innerHTML = `<span class="item-icon" aria-hidden="true">${upgrade.icon}</span>
+              <span class="item-info"><span class="item-name">${upgrade.name}</span>
+              <span class="item-description">Double this building's output. Requires ${format(upgrade.owned)} owned.</span>
+              <span class="item-cost"></span></span>`;
+            group.append(button);
           }
-          alert(`Welcome back! You earned ${offlineCookies.toLocaleString()} cookies while offline.`);
-          score = (data.score || 0) + offlineCookies;
+          upgradeList.append(group);
+        }
+      }
+
+      function renderMilestones() {
+        const list = $("milestones");
+        const earned = milestones.filter(item => state.milestones.includes(item.id));
+        if (earned.length === 0) {
+          list.innerHTML = '<div class="milestone empty">Your first little victory is just around the corner.</div>';
+          return;
+        }
+        list.innerHTML = earned.map(item =>
+          `<div class="milestone"><strong>✦ ${item.title}</strong>${item.description}</div>`
+        ).join("");
+      }
+
+      function render() {
+        const rate = productionRate();
+        const power = tapPower();
+        $("balance").textContent = format(state.balance);
+        $("total-baked").textContent = format(state.totalBaked);
+        $("production-rate").innerHTML = `${format(rate)} <small>/ sec</small>`;
+        $("tap-power").innerHTML = `${format(power)} <small>/ tap</small>`;
+        $("staff-total").textContent = format(buildings.reduce((sum, item) => sum + state.buildings[item.id], 0));
+        $("shard-total").textContent = format(state.dreamShards);
+        updateSoundButton();
+        $("tap-preview").textContent = `${format(power)} ${power === 1 ? "treat" : "treats"}`;
+        $("production-summary").textContent = rate > 0
+          ? `Your bakery is turning out ${format(rate)} treats every second.`
+          : "Your ovens are waiting for their first order.";
+
+        for (const item of buildings) {
+          const button = document.querySelector(`[data-building="${item.id}"]`);
+          const cost = buildingCost(item);
+          button.disabled = state.balance < cost;
+          button.classList.toggle("affordable", state.balance >= cost);
+          button.querySelector(".item-cost").textContent = `Cost: ${format(cost)} treats`;
+          button.querySelector(".item-count").textContent = state.buildings[item.id];
+          button.setAttribute("aria-label", `Hire ${item.name} for ${format(cost)} treats. Owned: ${state.buildings[item.id]}`);
+        }
+
+        for (const recipe of recipes) {
+          const button = document.querySelector(`[data-recipe="${recipe.id}"]`);
+          const purchased = state.recipes.includes(recipe.id);
+          const unlocked = state.totalBaked >= recipe.unlockAt;
+          button.hidden = !unlocked && !purchased;
+          button.disabled = purchased || state.balance < recipe.cost;
+          button.classList.toggle("affordable", !purchased && state.balance >= recipe.cost);
+          button.classList.toggle("purchased", purchased);
+          button.querySelector(".item-cost").textContent = purchased ? "Learned" : `Cost: ${format(recipe.cost)} treats`;
+          button.setAttribute("aria-label", `${recipe.name}. ${purchased ? "Learned" : `Costs ${format(recipe.cost)} treats`}`);
+        }
+
+        for (const upgrade of buildingUpgrades) {
+          const button = document.querySelector(`[data-building-upgrade="${upgrade.id}"]`);
+          const purchased = state.buildingUpgrades.includes(upgrade.id);
+          const unlocked = state.buildings[upgrade.buildingId] >= upgrade.owned;
+          button.hidden = !unlocked && !purchased;
+          button.disabled = purchased || state.balance < upgrade.cost;
+          button.classList.toggle("affordable", !purchased && state.balance >= upgrade.cost);
+          button.classList.toggle("purchased", purchased);
+          button.querySelector(".item-cost").textContent = purchased ? "Installed" : `Cost: ${format(upgrade.cost)} treats`;
+        }
+        for (const item of buildings) {
+          const group = document.querySelector(`[data-upgrade-group="${item.id}"]`);
+          group.hidden = !buildingUpgrades.some(upgrade =>
+            upgrade.buildingId === item.id &&
+            (state.buildings[item.id] >= upgrade.owned || state.buildingUpgrades.includes(upgrade.id))
+          );
+        }
+        renderBoosts();
+        renderDimension();
+      }
+
+      function dimensionRequirement() {
+        return 1000000000 * Math.pow(state.prestigeCount + 1, 2);
+      }
+
+      function renderDimension() {
+        const requirement = dimensionRequirement();
+        const ready = state.runBaked >= requirement;
+        const ascend = $("ascend-button");
+        ascend.hidden = !ready;
+        ascend.textContent = `Cross over · gain ${state.prestigeCount + 1} dream shard${state.prestigeCount ? "s" : ""}`;
+        $("dimension-description").textContent = ready
+          ? "The portal is open. Crossing over resets this run's treats, bakeries and regular upgrades, but keeps your lifetime record and permanent dimension research."
+          : `Bake ${format(requirement)} treats in this run to open the portal. Progress: ${format(state.runBaked)} / ${format(requirement)}.`;
+        const nextCost = 1 + Math.floor(state.dimensionLevels / 2);
+        const dimensionButton = $("shard-upgrade");
+        dimensionButton.disabled = state.dreamShards < nextCost;
+        dimensionButton.classList.toggle("affordable", state.dreamShards >= nextCost);
+        dimensionButton.textContent = `Expand the dimension · ${format(nextCost)} shard${nextCost === 1 ? "" : "s"} · permanent bakery output ×${format(Math.pow(1.5, state.dimensionLevels + 1))}`;
+        $("dimension-note").textContent = `Permanent dimension level ${state.dimensionLevels} · output ×${format(Math.pow(1.5, state.dimensionLevels))} · crossings ${state.prestigeCount}`;
+      }
+
+      function renderBoosts() {
+        const list = $("boost-list");
+        const now = Date.now();
+        const active = [
+          { key: "golden", label: "Golden glaze", multiplier: "Bakery output ×7" },
+          { key: "sugar", label: "Sugar rush", multiplier: "Tap power ×25" },
+          { key: "turbo", label: "Turbo taps", multiplier: "Tap power ×10" }
+        ].filter(boost => state.boosts[boost.key].expiresAt > now);
+        list.replaceChildren(...active.map(boost => {
+          const chip = document.createElement("div");
+          chip.className = "boost-chip";
+          const seconds = Math.ceil((state.boosts[boost.key].expiresAt - now) / 1000);
+          chip.textContent = `${boost.label} · ${boost.multiplier} · ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+          return chip;
+        }));
+      }
+
+      function showToast(message) {
+        const toast = $("toast");
+        toast.textContent = message;
+        toast.classList.add("visible");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("visible"), 3200);
+      }
+
+      function checkMilestones() {
+        let earnedNew = false;
+        for (const item of milestones) {
+          if (!state.milestones.includes(item.id) && state.totalBaked >= item.target) {
+            state.milestones.push(item.id);
+            showToast(`Little victory: ${item.title}!`);
+            earnedNew = true;
+          }
+        }
+        if (earnedNew) renderMilestones();
+      }
+
+      function addTreats(amount) {
+        if (!Number.isFinite(amount) || amount <= 0) return;
+        state.balance += amount;
+        state.totalBaked += amount;
+        state.runBaked += amount;
+        checkMilestones();
+      }
+
+      function earnForDuration(seconds, fromTime) {
+        if (!Number.isFinite(seconds) || seconds <= 0) return;
+        const baseRate = baseProductionRate();
+        const goldenRemaining = Math.max(0, Math.min(
+          seconds,
+          (state.boosts.golden.expiresAt - fromTime) / 1000
+        ));
+        addTreats(baseRate * (seconds + goldenRemaining * 6));
+      }
+
+      function showFloatingNumber(x, y, amount) {
+        const number = document.createElement("div");
+        number.className = "floating-number";
+        number.textContent = `+${format(amount)}`;
+        number.style.left = `${x}px`;
+        number.style.top = `${y}px`;
+        document.body.append(number);
+        number.addEventListener("animationend", () => number.remove(), { once: true });
+      }
+
+      function showCatchBurst(x, y) {
+        const burst = document.createElement("span");
+        burst.className = "catch-burst";
+        burst.setAttribute("aria-hidden", "true");
+        burst.textContent = "✦";
+        burst.style.left = `${x}px`;
+        burst.style.top = `${y}px`;
+        document.body.append(burst);
+        burst.addEventListener("animationend", () => burst.remove(), { once: true });
+      }
+
+      function catchLuckyTreat(event) {
+        const treat = $("falling-treat");
+        if (treat.hidden || treat.dataset.caught === "true" || !treat.dataset.reward) return;
+        event.preventDefault();
+        treat.dataset.caught = "true";
+        const bounds = treat.getBoundingClientRect();
+        showCatchBurst(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
+        let message;
+        if (treat.dataset.reward === "crumb") {
+          addTreats(10);
+          showFloatingNumber(bounds.left, bounds.top, 10);
+          message = "Crumb cookie: +10 treats!";
+        } else if (treat.dataset.reward === "choco") {
+          addTreats(100);
+          showFloatingNumber(bounds.left, bounds.top, 100);
+          message = "Chocolate cookie: +100 treats!";
+        } else if (treat.dataset.reward === "star") {
+          addTreats(600);
+          showFloatingNumber(bounds.left, bounds.top, 600);
+          message = "Star cookie: +600 treats!";
+        } else if (treat.dataset.reward === "turbo") {
+          state.boosts.turbo.expiresAt = Date.now() + 2 * 60 * 1000;
+          message = "Turbo taps: tap power ×10 for 2 minutes!";
+        } else if (treat.dataset.reward === "glaze") {
+          state.boosts.golden.expiresAt = Date.now() + 2 * 60 * 1000;
+          message = "Golden glaze: bakery output ×7 for 2 minutes!";
         } else {
-          score = data.score || 0;
+          state.boosts.sugar.expiresAt = Date.now() + 2 * 60 * 1000;
+          message = "Sugar rush: tap power ×25 for 2 minutes!";
         }
-        if (data.upgrades) {
-          for (const key in data.upgrades) {
-            if (upgrades[key]) {
-              upgrades[key].owned = data.upgrades[key].owned || 0;
-              upgrades[key].cost = data.upgrades[key].cost || upgrades[key].cost;
+        treat.hidden = true;
+        treat.style.animation = "none";
+        treat.dataset.caught = "false";
+        showToast(message);
+        playSound("catch");
+        render();
+        saveGame();
+      }
+
+      function scheduleLuckyTreat() {
+        clearTimeout(dropTimer);
+        dropTimer = setTimeout(() => {
+          const treat = $("falling-treat");
+          const cookieTypes = [
+            { className: "type-crumb", reward: "crumb", icon: "🍪", label: "crumb cookie: +10 treats" },
+            { className: "type-choco", reward: "choco", icon: "🍫", label: "chocolate cookie: +100 treats" },
+            { className: "type-star", reward: "star", icon: "⭐", label: "star cookie: +600 treats" },
+            { className: "type-sugar", reward: "turbo", icon: "🍬", label: "sugar cookie: turbo taps for 2 minutes" },
+            { className: "type-glaze", reward: "glaze", icon: "🍯", label: "glaze cookie: bakery boost for 2 minutes" },
+            { className: "type-sugar", reward: "sugar", icon: "🍭", label: "candy cookie: sugar rush for 2 minutes" }
+          ];
+          const roll = Math.random();
+          const selected = roll < 0.3 ? cookieTypes[0]
+            : roll < 0.55 ? cookieTypes[1]
+            : roll < 0.68 ? cookieTypes[2]
+            : roll < 0.82 ? cookieTypes[3]
+            : roll < 0.92 ? cookieTypes[4]
+            : cookieTypes[5];
+          const viewportWidth = document.documentElement.clientWidth;
+          const margin = 12;
+          const cookieSize = treat.offsetWidth || 76;
+          const maxLeft = Math.max(margin, viewportWidth - cookieSize - margin);
+          const left = margin + Math.random() * (maxLeft - margin);
+          const driftRange = Math.max(0, Math.min(100, left - margin, maxLeft - left));
+          const drift = (Math.random() * 2 - 1) * driftRange;
+          treat.dataset.reward = selected.reward;
+          treat.dataset.caught = "false";
+          treat.className = `falling-treat ${selected.className}`;
+          const icon = document.createElement("span");
+          icon.className = "falling-treat-icon";
+          icon.setAttribute("aria-hidden", "true");
+          icon.textContent = selected.icon;
+          treat.replaceChildren(icon);
+          treat.setAttribute("aria-label", `Catch the falling ${selected.label}`);
+          treat.style.left = `${left}px`;
+          treat.style.setProperty("--fall-drift", `${drift}px`);
+          treat.style.setProperty("--fall-duration", `${7 + Math.random() * 4}s`);
+          treat.style.animation = "none";
+          treat.hidden = false;
+          void treat.offsetWidth;
+          treat.style.animation = "";
+          scheduleLuckyTreat();
+        }, 8000 + Math.random() * 15000);
+      }
+
+      function saveGame(showMessage = false) {
+        state.lastSaved = Date.now();
+        try {
+          localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+          storageAvailable = true;
+          $("save-status").textContent = "Progress saved on this device";
+          if (showMessage) showToast("Your bakery is saved on this device.");
+        } catch (error) {
+          storageAvailable = false;
+          $("save-status").textContent = "Could not save — check your browser storage settings";
+          if (showMessage) showToast("Save failed. Your browser may have storage disabled.");
+          console.error("Could not save Midnight Bakery progress.", error);
+        }
+      }
+
+      function loadGame() {
+        let raw;
+        try {
+          raw = localStorage.getItem(SAVE_KEY);
+        } catch (error) {
+          storageAvailable = false;
+          $("save-status").textContent = "Browser storage is unavailable; progress may not save";
+          console.error("Could not read Midnight Bakery progress.", error);
+          return;
+        }
+        if (!raw) return;
+        try {
+          const saved = JSON.parse(raw);
+          if (!saved || typeof saved !== "object" ||
+              !Number.isFinite(saved.balance) || saved.balance < 0 ||
+              !Number.isFinite(saved.totalBaked) || saved.totalBaked < 0 ||
+              !saved.buildings || typeof saved.buildings !== "object" ||
+              !Array.isArray(saved.recipes) || !Array.isArray(saved.milestones)) {
+            throw new Error("Save data has an invalid shape.");
+          }
+          state = freshState();
+          state.balance = saved.balance;
+          state.totalBaked = saved.totalBaked;
+          state.soundEnabled = typeof saved.soundEnabled === "boolean" ? saved.soundEnabled : true;
+          state.runBaked = Number.isFinite(saved.runBaked) && saved.runBaked >= 0 ? saved.runBaked : saved.totalBaked;
+          for (const item of buildings) {
+            const count = saved.buildings[item.id];
+            if (Number.isSafeInteger(count) && count >= 0) state.buildings[item.id] = count;
+          }
+          state.buildingUpgrades = Array.isArray(saved.buildingUpgrades)
+            ? saved.buildingUpgrades.filter(id => buildingUpgrades.some(item => item.id === id))
+            : [];
+          state.recipes = saved.recipes.filter(id => recipes.some(item => item.id === id));
+          state.milestones = saved.milestones.filter(id => milestones.some(item => item.id === id));
+          state.dreamShards = Number.isSafeInteger(saved.dreamShards) && saved.dreamShards >= 0 ? saved.dreamShards : 0;
+          state.dimensionLevels = Number.isSafeInteger(saved.dimensionLevels) && saved.dimensionLevels >= 0 ? saved.dimensionLevels : 0;
+          state.prestigeCount = Number.isSafeInteger(saved.prestigeCount) && saved.prestigeCount >= 0 ? saved.prestigeCount : 0;
+          state.lastSaved = Number.isFinite(saved.lastSaved) ? saved.lastSaved : Date.now();
+          if (saved.boosts && typeof saved.boosts === "object") {
+            for (const key of ["golden", "sugar", "turbo"]) {
+              const expiresAt = saved.boosts[key] && saved.boosts[key].expiresAt;
+              if (Number.isFinite(expiresAt) && expiresAt > state.lastSaved && expiresAt - state.lastSaved < 24 * 60 * 60 * 1000) {
+                state.boosts[key].expiresAt = expiresAt;
+              }
             }
           }
-        }
-      } catch {
-        // Ignore parse errors
-      }
-    }
-    updateCookiesPerSecond();
-    updateScoreDisplay();
-    updateUpgradeDisplays();
-  }
-
-  // Cookie click handler
-  cookie.addEventListener('click', (e) => {
-    score++;
-    updateScoreDisplay();
-    updateUpgradeDisplays();
-    spawnSparkles(e.clientX, e.clientY);
-    saveGame();
-  });
-
-  // Buy upgrade function
-  function buyUpgrade(key) {
-    const upgrade = upgrades[key];
-    if (score >= upgrade.cost) {
-      score -= Math.floor(upgrade.cost);
-      upgrade.owned++;
-      upgrade.cost *= upgrade.costIncreaseFactor;
-      updateCookiesPerSecond();
-      updateScoreDisplay();
-      updateUpgradeDisplays();
-      animateUpgradePurchase(upgrade.element);
-      saveGame();
-    }
-  }
-
-  // Animate upgrade purchase with pulse effect
-  function animateUpgradePurchase(element) {
-    element.classList.remove('pulse');
-    void element.offsetWidth; // trigger reflow
-    element.classList.add('pulse');
-  }
-
-  // Add event listeners to upgrades
-  for (const key in upgrades) {
-    upgrades[key].element.addEventListener('click', () => buyUpgrade(key));
-  }
-
-  // Calculate total cookies per second from upgrades
-  function updateCookiesPerSecond() {
-    cookiesPerSecond = 0;
-    for (const key in upgrades) {
-      cookiesPerSecond += upgrades[key].owned * upgrades[key].cps;
-    }
-  }
-
-  // Auto clicker interval (adds cookies per second)
-  setInterval(() => {
-    if (cookiesPerSecond > 0) {
-      score += cookiesPerSecond;
-      updateScoreDisplay();
-      updateUpgradeDisplays();
-      saveGame();
-    }
-  }, 1000);
-
-  // Reset button
-  const resetBtn = document.getElementById('reset-btn');
-  resetBtn.addEventListener('click', () => {
-    if (confirm('Are you sure you want to reset your game?')) {
-      score = 0;
-      cookiesPerSecond = 0;
-      for (const key in upgrades) {
-        upgrades[key].owned = 0;
-        switch(key) {
-          case 'cursor': upgrades[key].cost = 10; break;
-          case 'grandma': upgrades[key].cost = 50; break;
-          case 'farm': upgrades[key].cost = 200; break;
-          case 'factory': upgrades[key].cost = 1000; break;
-          case 'mine': upgrades[key].cost = 10000; break;
-          case 'lab': upgrades[key].cost = 100000; break;
+          const awaySeconds = Math.max(0, (Date.now() - state.lastSaved) / 1000);
+          const offlineEarnings = baseProductionRate() * (
+            awaySeconds + Math.max(0, Math.min(awaySeconds, (state.boosts.golden.expiresAt - state.lastSaved) / 1000)) * 6
+          );
+          if (offlineEarnings > 0) {
+            addTreats(Math.min(offlineEarnings, Number.MAX_VALUE - state.balance));
+            if (Number.isFinite(offlineEarnings) && offlineEarnings >= 0.05) {
+              showToast(`Welcome back! Your bakery made ${format(offlineEarnings)} treats while you were away.`);
+            }
+          }
+          state.boosts.golden.expiresAt = Math.max(Date.now(), state.boosts.golden.expiresAt);
+          state.boosts.sugar.expiresAt = Math.max(Date.now(), state.boosts.sugar.expiresAt);
+        } catch (error) {
+          state = freshState();
+          $("save-status").textContent = "Save data could not be loaded";
+          console.error("Could not load Midnight Bakery progress.", error);
+          showToast("A saved game could not be read, so a fresh bakery was started.");
         }
       }
-      updateScoreDisplay();
-      updateUpgradeDisplays();
-      saveGame();
-    }
-  });
 
-  // Sparkle effect on click (more sparkles & staggered timing)
-  function spawnSparkles(x, y) {
-    const rect = cookie.getBoundingClientRect();
-    const sparkleCount = 15;
-    for (let i = 0; i < sparkleCount; i++) {
-      const sparkle = document.createElement('div');
-      sparkle.classList.add('sparkle');
-      const angle = Math.random() * 2 * Math.PI;
-      const distance = 20 + Math.random() * 40;
-      sparkle.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
-      sparkle.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
-      sparkle.style.left = (x - rect.left) + 'px';
-      sparkle.style.top = (y - rect.top) + 'px';
-      sparkle.style.animationDelay = (i * 40) + 'ms';
-      cookie.appendChild(sparkle);
-      sparkle.addEventListener('animationend', () => sparkle.remove());
-    }
-  }
+      $("bake-button").addEventListener("click", event => {
+        const amount = tapPower();
+        const bounds = event.currentTarget.getBoundingClientRect();
+        event.currentTarget.classList.remove("tap-pop");
+        void event.currentTarget.offsetWidth;
+        event.currentTarget.classList.add("tap-pop");
+        addTreats(amount);
+        showFloatingNumber(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2, amount);
+        playSound("click");
+        render();
+        saveGame();
+      });
+      $("bake-button").addEventListener("animationend", event => {
+        if (event.animationName === "pastry-pop") event.currentTarget.classList.remove("tap-pop");
+      });
 
-  // Initial load
-  loadGame();
-</script>
+      $("shop-list").addEventListener("click", event => {
+        const button = event.target.closest("[data-building]");
+        if (!button) return;
+        const item = buildings.find(building => building.id === button.dataset.building);
+        if (!item) return;
+        const cost = buildingCost(item);
+        if (state.balance < cost) return;
+        state.balance -= cost;
+        state.buildings[item.id]++;
+        button.classList.remove("purchase-pop");
+        void button.offsetWidth;
+        button.classList.add("purchase-pop");
+        playSound("purchase");
+        render();
+        saveGame();
+      });
 
+      $("upgrade-list").addEventListener("click", event => {
+        const button = event.target.closest("[data-recipe]");
+        if (button) {
+          const recipe = recipes.find(item => item.id === button.dataset.recipe);
+          if (!recipe || state.recipes.includes(recipe.id) || state.balance < recipe.cost) return;
+          state.balance -= recipe.cost;
+          state.recipes.push(recipe.id);
+          button.classList.remove("purchase-pop");
+          void button.offsetWidth;
+          button.classList.add("purchase-pop");
+          playSound("purchase");
+          showToast(`Recipe learned: ${recipe.name}!`);
+          render();
+          saveGame();
+          return;
+        }
+        const buildingButton = event.target.closest("[data-building-upgrade]");
+        if (!buildingButton) return;
+        const upgrade = buildingUpgrades.find(item => item.id === buildingButton.dataset.buildingUpgrade);
+        if (!upgrade || state.buildingUpgrades.includes(upgrade.id) || state.balance < upgrade.cost ||
+            state.buildings[upgrade.buildingId] < upgrade.owned) return;
+        state.balance -= upgrade.cost;
+        state.buildingUpgrades.push(upgrade.id);
+        buildingButton.classList.remove("purchase-pop");
+        void buildingButton.offsetWidth;
+        buildingButton.classList.add("purchase-pop");
+        playSound("purchase");
+        showToast(`${upgrade.name} installed. This building now produces twice as fast.`);
+        render();
+        saveGame();
+      });
+
+      $("falling-treat").addEventListener("click", catchLuckyTreat);
+      $("falling-treat").addEventListener("pointerdown", event => {
+        if (event.button === 0 || event.pointerType === "touch") catchLuckyTreat(event);
+      });
+      $("falling-treat").addEventListener("pointerenter", event => {
+        if (event.pointerType === "mouse") event.currentTarget.classList.add("pointer-near");
+      });
+      $("falling-treat").addEventListener("pointerleave", event => {
+        event.currentTarget.classList.remove("pointer-near");
+      });
+      $("falling-treat").addEventListener("animationend", event => {
+        if (event.animationName === "treat-fall") $("falling-treat").hidden = true;
+      });
+      $("save-button").addEventListener("click", () => saveGame(true));
+      $("sound-button").addEventListener("click", () => {
+        state.soundEnabled = !state.soundEnabled;
+        updateSoundButton();
+        if (state.soundEnabled) playSound("toggle");
+        saveGame();
+        showToast(state.soundEnabled ? "Soft bakery sounds are on." : "Bakery sounds are off.");
+      });
+      $("ascend-button").addEventListener("click", () => {
+        const gainedShards = state.prestigeCount + 1;
+        if (state.runBaked < dimensionRequirement()) return;
+        if (!window.confirm(`Cross into the Dream Dimension for ${gainedShards} permanent dream shard${gainedShards === 1 ? "" : "s"}? Your current-run bakeries and treats will reset.`)) return;
+        state.dreamShards += gainedShards;
+        state.prestigeCount++;
+        state.balance = 0;
+        state.runBaked = 0;
+        state.buildings = Object.fromEntries(buildings.map(item => [item.id, 0]));
+        state.buildingUpgrades = [];
+        state.recipes = [];
+        state.boosts = { golden: { expiresAt: 0 }, sugar: { expiresAt: 0 }, turbo: { expiresAt: 0 } };
+        saveGame();
+        render();
+        showToast(`A new dimension awaits. You gained ${gainedShards} dream shard${gainedShards === 1 ? "" : "s"}!`);
+      });
+      $("shard-upgrade").addEventListener("click", () => {
+        const cost = 1 + Math.floor(state.dimensionLevels / 2);
+        if (state.dreamShards < cost) return;
+        state.dreamShards -= cost;
+        state.dimensionLevels++;
+        render();
+        saveGame();
+        showToast("Your bakery is stronger in every dimension.");
+      });
+      $("reset-button").addEventListener("click", () => {
+        if (!window.confirm("Start a new bakery? This will erase the saved game on this device.")) return;
+        state = freshState();
+        renderMilestones();
+        saveGame();
+        render();
+        showToast("A fresh bakery, just for you.");
+      });
+
+      buildShop();
+      loadGame();
+      renderMilestones();
+      render();
+      lastFrame = Date.now();
+
+      setInterval(() => {
+        const now = Date.now();
+        const elapsed = Math.min((now - lastFrame) / 1000, 5);
+        lastFrame = now;
+        addTreats(productionRate() * elapsed);
+        render();
+      }, 200);
+
+      setInterval(() => {
+        if (storageAvailable) saveGame();
+      }, 5000);
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") saveGame();
+        else {
+          const now = Date.now();
+          const awaySeconds = Math.max(0, (now - lastFrame) / 1000);
+          if (awaySeconds > 5) earnForDuration(awaySeconds, lastFrame);
+          lastFrame = now;
+          render();
+        }
+      });
+      window.addEventListener("pagehide", () => saveGame());
+      scheduleLuckyTreat();
+    })();
+  </script>
 </body>
 </html>
