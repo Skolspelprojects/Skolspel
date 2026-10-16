@@ -116,6 +116,52 @@
     }
     .milestone strong { display: block; margin-bottom: 2px; color: #e7d8c8; font-size: 12px; }
     .milestone.empty { border-style: dashed; }
+    .leaderboard-form { display: grid; gap: 8px; padding: 0 16px 13px; }
+    .leaderboard-input {
+      width: 100%;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: #f6eee4;
+      background: #151311;
+      font: inherit;
+      font-size: 12px;
+    }
+    .leaderboard-submit, .leaderboard-refresh {
+      padding: 9px 11px;
+      border: 1px solid #80613c;
+      border-radius: 8px;
+      color: #ffe1a6;
+      background: rgba(113, 78, 36, .22);
+      cursor: pointer;
+      font: inherit;
+      font-size: 12px;
+      transition: background .2s ease, transform .2s ease;
+    }
+    .leaderboard-submit:hover:not(:disabled), .leaderboard-refresh:hover { background: rgba(145, 99, 43, .38); transform: translateY(-1px); }
+    .leaderboard-submit:disabled { cursor: wait; opacity: .6; }
+    .leaderboard-help, .leaderboard-status { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .leaderboard-status[data-state="error"] { color: #ffb0a4; }
+    .leaderboard-status[data-state="success"] { color: var(--green); }
+    .leaderboard-rows { display: grid; gap: 6px; padding: 0 16px 17px; }
+    .leaderboard-row {
+      display: grid;
+      grid-template-columns: 25px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: rgba(18, 16, 14, .32);
+      font-size: 12px;
+      animation: panel-arrive .3s ease both;
+    }
+    .leaderboard-rank { color: var(--gold); font-weight: 750; }
+    .leaderboard-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .leaderboard-score { color: #ead6bf; font-variant-numeric: tabular-nums; }
+    .leaderboard-empty { padding: 10px; border: 1px dashed var(--line); border-radius: 9px; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .leaderboard-tools { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 0 16px 10px; }
+    .leaderboard-refresh { padding: 6px 9px; font-size: 10px; }
     .bakery {
       min-height: 530px;
       padding: 35px 20px 29px;
@@ -170,14 +216,44 @@
     .click-help { color: var(--muted); font-size: 13px; }
     .click-help strong { color: #ead6bf; }
     .production-line { margin-top: 13px; color: var(--green); font-size: 12px; }
+    .next-goal {
+      width: min(100%, 330px);
+      margin-top: 18px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      text-align: left;
+      background: rgba(18, 16, 14, .36);
+    }
+    .next-goal-label { color: var(--gold); font-size: 10px; font-weight: 750; letter-spacing: .11em; text-transform: uppercase; }
+    .next-goal-title { display: block; margin-top: 5px; font-size: 12px; line-height: 1.4; }
+    .next-goal-detail { display: block; margin-top: 5px; color: var(--muted); font-size: 10px; }
+    .next-goal-track { height: 5px; margin-top: 9px; overflow: hidden; border-radius: 9px; background: #3b332b; }
+    .next-goal-progress { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #ae7842, var(--gold)); transition: width .35s ease; }
     .boost-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; min-height: 0; margin-top: 12px; }
     .boost-chip { padding: 7px 10px; border: 1px solid #82653c; border-radius: 999px; color: #ffe1a6; background: rgba(113, 78, 36, .25); font-size: 11px; }
     .shop-panel > .panel-heading { position: sticky; top: 0; z-index: 1; background: #201d1a; border-bottom: 1px solid var(--line); }
+    .shop-intro { margin: 0; padding: 12px 18px 2px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .buy-options { display: flex; align-items: center; gap: 7px; padding: 9px 12px 2px; }
+    .buy-options-label { margin-right: auto; color: var(--muted); font-size: 11px; }
+    .buy-option {
+      min-width: 42px;
+      padding: 6px 8px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      color: var(--muted);
+      background: transparent;
+      cursor: pointer;
+      font-size: 11px;
+    }
+    .buy-option[aria-pressed="true"] { border-color: #82653c; color: #ffe1a6; background: rgba(113, 78, 36, .3); }
+    .shop-button { min-height: 75px; }
+    .upgrade-button { min-height: 67px; }
     .shop-list { max-height: 43vh; overflow-y: auto; scrollbar-color: #75604c transparent; }
     .shop-button.affordable, .upgrade-button.affordable, .dimension-button.affordable { border-color: #82653c; }
     .upgrade-list { max-height: 34vh; overflow-y: auto; scrollbar-color: #75604c transparent; }
     .upgrade-group { display: grid; gap: 8px; }
-    .upgrade-group[hidden], .falling-treat[hidden] { display: none; }
+    .upgrade-group[hidden], .falling-treat[hidden], .upgrade-button[hidden] { display: none; }
     .upgrade-group-title { position: sticky; top: 0; padding: 7px 3px 2px; background: var(--panel); color: var(--gold); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
     .dimension-panel { margin: 0 12px 14px; padding: 13px; border: 1px solid #675134; border-radius: 11px; background: linear-gradient(130deg, rgba(94, 69, 37, .34), rgba(40, 34, 28, .5)); }
     .dimension-title { color: #ffe1a6; font-size: 13px; font-weight: 700; }
@@ -282,9 +358,11 @@
     .item-icon { width: 35px; flex: 0 0 35px; text-align: center; font-size: 25px; }
     .item-info { min-width: 0; flex: 1; }
     .item-name { font-size: 13px; font-weight: 680; }
-    .item-description { margin-top: 3px; color: var(--muted); font-size: 11px; line-height: 1.35; }
+    .item-description { margin-top: 3px; color: var(--muted); font-size: 11px; line-height: 1.4; }
     .item-count { min-width: 25px; color: var(--gold); text-align: right; font-size: 17px; font-weight: 700; }
-    .item-cost { margin-top: 4px; color: var(--gold); font-size: 11px; }
+    .item-cost { margin-top: 4px; color: var(--gold); font-size: 11px; font-weight: 650; }
+    .upgrade-button.endless-upgrade { border-color: rgba(199, 169, 255, .35); }
+    .upgrade-button.endless-upgrade .item-cost { color: #d8c4ff; }
     .upgrade-section { margin-top: 13px; }
     .section-heading { margin: 0; padding: 16px 19px 12px; color: #f3dfc8; font-size: 12px; letter-spacing: .13em; text-transform: uppercase; }
     .upgrade-button { gap: 9px; }
@@ -374,6 +452,21 @@
       <div class="section-divider"></div>
       <h2 class="section-heading">Little victories</h2>
       <div class="milestone-list" id="milestones" aria-live="polite"></div>
+      <div class="section-divider"></div>
+      <h2 class="section-heading">Bakery leaderboard</h2>
+      <form class="leaderboard-form" id="leaderboard-form">
+        <label class="leaderboard-help" for="leaderboard-name">Choose the public name shown beside your best score.</label>
+        <input class="leaderboard-input" id="leaderboard-name" name="username" type="text" maxlength="20" minlength="2" autocomplete="nickname" placeholder="Bakery name" required>
+        <button class="leaderboard-submit" id="leaderboard-submit" type="submit">Submit my best score</button>
+        <p class="leaderboard-status" id="leaderboard-status" role="status" aria-live="polite">Loading the shared leaderboard…</p>
+      </form>
+      <div class="leaderboard-tools">
+        <span class="leaderboard-help">Top 10 bakeries</span>
+        <button class="leaderboard-refresh" id="leaderboard-refresh" type="button">Refresh</button>
+      </div>
+      <div class="leaderboard-rows" id="leaderboard-rows" aria-live="polite">
+        <div class="leaderboard-empty">Connect a Vercel Blob store to load scores.</div>
+      </div>
     </aside>
 
     <section class="panel bakery" aria-label="Bake treats">
@@ -383,16 +476,32 @@
       <button class="bake-button" id="bake-button" type="button" aria-label="Bake one treat">✦</button>
       <div class="click-help">Tap the pastry to bake <strong id="tap-preview">1 treat</strong></div>
       <div class="production-line" id="production-summary">Your ovens are waiting for their first order.</div>
+      <div class="next-goal" aria-live="polite">
+        <span class="next-goal-label">Your next goal</span>
+        <strong class="next-goal-title" id="next-goal-title">Bake 25 treats to unlock your first recipe.</strong>
+        <span class="next-goal-detail" id="next-goal-detail">0 / 25 treats baked</span>
+        <div class="next-goal-track" role="progressbar" aria-label="Progress toward your next bakery goal" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <span class="next-goal-progress" id="next-goal-progress"></span>
+        </div>
+      </div>
       <div class="boost-list" id="boost-list" aria-live="polite"></div>
       <p class="click-help">A lucky falling treat may appear now and then. Catch it!</p>
     </section>
 
     <section class="panel shop-panel" aria-label="Bakery shop">
       <h2 class="panel-heading">Grow the bakery</h2>
-      <h3 class="section-heading">Your production chain</h3>
+      <p class="shop-intro">Buy bakeries to make treats automatically. Pick a batch size to grow faster.</p>
+      <div class="buy-options" role="group" aria-label="Building purchase quantity">
+        <span class="buy-options-label">Buy quantity</span>
+        <button class="buy-option" type="button" data-buy-amount="1" aria-pressed="true">×1</button>
+        <button class="buy-option" type="button" data-buy-amount="10" aria-pressed="false">×10</button>
+        <button class="buy-option" type="button" data-buy-amount="100" aria-pressed="false">×100</button>
+      </div>
+      <h3 class="section-heading">Production buildings</h3>
       <div class="shop-list" id="shop-list"></div>
       <div class="upgrade-section">
-        <h3 class="section-heading">Research &amp; machinery upgrades</h3>
+        <h3 class="section-heading">Permanent upgrades</h3>
+        <p class="shop-intro">Unlock with bakery milestones. Endless mastery keeps scaling as you progress.</p>
         <div class="upgrade-list" id="upgrade-list"></div>
       </div>
       <section class="dimension-panel" aria-label="Dream dimension">
@@ -416,6 +525,8 @@
       "use strict";
 
       const SAVE_KEY = "midnight-bakery-save-v1";
+      const PLAYER_ID_KEY = "midnight-bakery-leaderboard-player-v1";
+      const PLAYER_NAME_KEY = "midnight-bakery-leaderboard-name-v1";
       const buildings = [
         { id: "helper", name: "Kitchen helper", icon: "🧑‍🍳", description: "A pair of quick, floury hands.", baseCost: 15, production: 0.1 },
         { id: "oven", name: "Copper oven", icon: "🔥", description: "Keeps a steady batch coming.", baseCost: 100, production: 1 },
@@ -462,7 +573,9 @@
       const freshState = () => ({
         balance: 0, totalBaked: 0, runBaked: 0,
         buildings: Object.fromEntries(buildings.map(item => [item.id, 0])),
-        buildingUpgrades: [], recipes: [], milestones: [], dreamShards: 0,
+        buildingUpgrades: [], endlessUpgradeLevels: Object.fromEntries(buildings.map(item => [item.id, 0])),
+        endlessTapLevel: 0,
+        recipes: [], milestones: [], dreamShards: 0,
         dimensionLevels: 0, prestigeCount: 0,
         boosts: { golden: { expiresAt: 0 }, sugar: { expiresAt: 0 }, turbo: { expiresAt: 0 } },
         soundEnabled: true,
@@ -474,6 +587,9 @@
       let storageAvailable = true;
       let audioContext;
       const boostChipNodes = new Map();
+      let leaderboardPlayerId = null;
+      let leaderboardRequestInProgress = false;
+      let purchaseAmount = 1;
       const $ = id => document.getElementById(id);
       const numberFormat = new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 });
       const shortFormat = new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 2 });
@@ -578,8 +694,129 @@
       }
 
       function format(value) {
+        if (!Number.isFinite(value)) return "A lot";
+        if (value >= 1e15) return value.toExponential(2);
         if (value >= 1000000) return shortFormat.format(value);
         return numberFormat.format(value);
+      }
+
+      function buildingName(item, count) {
+        if (count === 1) return item.name;
+        return item.name.endsWith("y") ? `${item.name.slice(0, -1)}ies` : `${item.name}s`;
+      }
+
+      function setLeaderboardStatus(message, stateName = "info") {
+        const status = $("leaderboard-status");
+        status.textContent = message;
+        status.dataset.state = stateName;
+      }
+
+      function getLeaderboardPlayerId() {
+        if (leaderboardPlayerId) return leaderboardPlayerId;
+        try {
+          const existing = localStorage.getItem(PLAYER_ID_KEY);
+          if (existing && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(existing)) {
+            leaderboardPlayerId = existing;
+          } else {
+            leaderboardPlayerId = crypto.randomUUID();
+            localStorage.setItem(PLAYER_ID_KEY, leaderboardPlayerId);
+          }
+        } catch (error) {
+          throw new Error("This browser could not save a leaderboard player ID. Check its storage settings.", { cause: error });
+        }
+        return leaderboardPlayerId;
+      }
+
+      function renderLeaderboard(entries) {
+        const list = $("leaderboard-rows");
+        list.replaceChildren();
+        if (entries.length === 0) {
+          const empty = document.createElement("div");
+          empty.className = "leaderboard-empty";
+          empty.textContent = "No scores yet. Be the first to submit your bakery!";
+          list.append(empty);
+          return;
+        }
+
+        for (const [index, entry] of entries.entries()) {
+          const row = document.createElement("div");
+          row.className = "leaderboard-row";
+          const rank = document.createElement("span");
+          rank.className = "leaderboard-rank";
+          rank.textContent = `${index + 1}.`;
+          const name = document.createElement("span");
+          name.className = "leaderboard-name";
+          name.textContent = entry.username;
+          const score = document.createElement("span");
+          score.className = "leaderboard-score";
+          score.textContent = format(entry.score);
+          row.append(rank, name, score);
+          list.append(row);
+        }
+      }
+
+      async function loadLeaderboard() {
+        try {
+          const response = await fetch("/api/leaderboard", { cache: "no-store" });
+          let result;
+          try {
+            result = await response.json();
+          } catch {
+            throw new Error("The shared leaderboard needs a Vercel deployment and a connected Blob store.");
+          }
+          if (!response.ok) throw new Error(result.error || "The leaderboard could not be loaded.");
+          if (!Array.isArray(result.entries)) throw new Error("The leaderboard returned invalid data.");
+          renderLeaderboard(result.entries);
+          setLeaderboardStatus("Scores are shared with other players.", "success");
+        } catch (error) {
+          setLeaderboardStatus(error.message || "The leaderboard is unavailable. Deploy and connect Vercel Blob.", "error");
+        }
+      }
+
+      async function submitLeaderboardScore(event) {
+        event.preventDefault();
+        if (leaderboardRequestInProgress) return;
+        const input = $("leaderboard-name");
+        const username = input.value.trim().replace(/\s+/g, " ");
+        const usernameLength = Array.from(username).length;
+        if (usernameLength < 2 || usernameLength > 20 || /[\u0000-\u001f\u007f]/.test(username)) {
+          setLeaderboardStatus("Choose a name between 2 and 20 characters.", "error");
+          input.focus();
+          return;
+        }
+
+        leaderboardRequestInProgress = true;
+        $("leaderboard-submit").disabled = true;
+        setLeaderboardStatus("Submitting your best score…");
+        try {
+          const playerId = getLeaderboardPlayerId();
+          const response = await fetch("/api/leaderboard", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ playerId, username, score: state.totalBaked })
+          });
+          let result;
+          try {
+            result = await response.json();
+          } catch {
+            throw new Error("The shared leaderboard needs a Vercel deployment and a connected Blob store.");
+          }
+          if (!response.ok) throw new Error(result.error || "Your score could not be submitted.");
+          if (!Array.isArray(result.entries)) throw new Error("The leaderboard returned invalid data.");
+          try {
+            localStorage.setItem(PLAYER_NAME_KEY, username);
+          } catch (error) {
+            console.warn("Could not save the leaderboard display name on this device.", error);
+          }
+          input.value = username;
+          renderLeaderboard(result.entries);
+          setLeaderboardStatus("Your best score is on the leaderboard.", "success");
+        } catch (error) {
+          setLeaderboardStatus(error.message || "Your score could not be submitted. Try again later.", "error");
+        } finally {
+          leaderboardRequestInProgress = false;
+          $("leaderboard-submit").disabled = false;
+        }
       }
 
       function productionRate() {
@@ -588,11 +825,12 @@
           return recipe && recipe.effect === "production";
         }).length);
         const upgradeMultiplier = buildings.reduce((sum, item) => {
-          const levels = state.buildingUpgrades.filter(id => id.startsWith(`${item.id}-upgrade-`)).length;
-          return sum + state.buildings[item.id] * item.production * Math.pow(2, levels);
+          const levels = state.buildingUpgrades.filter(id => id.startsWith(`${item.id}-upgrade-`)).length +
+            state.endlessUpgradeLevels[item.id];
+          return Math.min(Number.MAX_VALUE, sum + state.buildings[item.id] * item.production * Math.pow(2, Math.min(levels, 1023)));
         }, 0);
         const boostMultiplier = state.boosts.golden.expiresAt > Date.now() ? 7 : 1;
-        return upgradeMultiplier * recipeMultiplier * Math.pow(1.5, state.dimensionLevels) * boostMultiplier;
+        return Math.min(Number.MAX_VALUE, upgradeMultiplier * recipeMultiplier * Math.pow(1.5, Math.min(state.dimensionLevels, 700)) * boostMultiplier);
       }
 
       function baseProductionRate() {
@@ -601,10 +839,11 @@
           return recipe && recipe.effect === "production";
         }).length);
         const upgradeMultiplier = buildings.reduce((sum, item) => {
-          const levels = state.buildingUpgrades.filter(id => id.startsWith(`${item.id}-upgrade-`)).length;
-          return sum + state.buildings[item.id] * item.production * Math.pow(2, levels);
+          const levels = state.buildingUpgrades.filter(id => id.startsWith(`${item.id}-upgrade-`)).length +
+            state.endlessUpgradeLevels[item.id];
+          return Math.min(Number.MAX_VALUE, sum + state.buildings[item.id] * item.production * Math.pow(2, Math.min(levels, 1023)));
         }, 0);
-        return upgradeMultiplier * recipeMultiplier * Math.pow(1.5, state.dimensionLevels);
+        return Math.min(Number.MAX_VALUE, upgradeMultiplier * recipeMultiplier * Math.pow(1.5, Math.min(state.dimensionLevels, 700)));
       }
 
       function tapPower() {
@@ -614,11 +853,33 @@
         }).length);
         const boostMultiplier = state.boosts.sugar.expiresAt > Date.now() ? 25 : 1;
         const turboMultiplier = state.boosts.turbo.expiresAt > Date.now() ? 10 : 1;
-        return recipeMultiplier * boostMultiplier * turboMultiplier;
+        return Math.min(Number.MAX_VALUE, recipeMultiplier * Math.pow(2, Math.min(state.endlessTapLevel, 1023)) *
+          boostMultiplier * turboMultiplier);
       }
 
-      function buildingCost(item) {
-        return Math.ceil(item.baseCost * Math.pow(1.15, state.buildings[item.id]));
+      function affordableBuildingBatch(item, quantity) {
+        let count = 0;
+        let cost = 0;
+        while (count < quantity && state.buildings[item.id] + count < Number.MAX_SAFE_INTEGER) {
+          const nextCost = cost + item.baseCost * Math.pow(1.15, state.buildings[item.id] + count);
+          if (!Number.isFinite(nextCost) || Math.ceil(nextCost) > state.balance) break;
+          count++;
+          cost = nextCost;
+        }
+        return { count, cost: count ? Math.ceil(cost) : Math.ceil(item.baseCost * Math.pow(1.15, state.buildings[item.id])) };
+      }
+
+      function endlessUpgradeCost(item, level) {
+        const logCost = Math.log10(item.baseCost * 8) + 8 + level;
+        return logCost >= 308 ? Number.MAX_VALUE : Math.ceil(item.baseCost * 8 * Math.pow(10, 8 + level));
+      }
+
+      function endlessUpgradeRequirement(level) {
+        return Math.min(Number.MAX_SAFE_INTEGER, 1000 + level * 250);
+      }
+
+      function endlessTapCost(level) {
+        return 6 + Math.log10(5) * level >= 308 ? Number.MAX_VALUE : Math.ceil(1000000 * Math.pow(5, level));
       }
 
       function buildShop() {
@@ -646,6 +907,14 @@
             <span class="item-description">${recipe.description}</span><span class="item-cost"></span></span>`;
           upgradeList.append(button);
         }
+        const tapUpgrade = document.createElement("button");
+        tapUpgrade.className = "upgrade-button endless-upgrade";
+        tapUpgrade.type = "button";
+        tapUpgrade.dataset.endlessTapUpgrade = "";
+        tapUpgrade.innerHTML = `<span class="item-icon" aria-hidden="true">✨</span>
+          <span class="item-info"><span class="item-name"></span>
+          <span class="item-description"></span><span class="item-cost"></span></span>`;
+        upgradeList.append(tapUpgrade);
         for (const item of buildings) {
           const group = document.createElement("div");
           group.className = "upgrade-group";
@@ -665,6 +934,14 @@
               <span class="item-cost"></span></span>`;
             group.append(button);
           }
+          const endlessButton = document.createElement("button");
+          endlessButton.className = "upgrade-button endless-upgrade";
+          endlessButton.type = "button";
+          endlessButton.dataset.endlessUpgrade = item.id;
+          endlessButton.innerHTML = `<span class="item-icon" aria-hidden="true">♾️</span>
+            <span class="item-info"><span class="item-name"></span>
+            <span class="item-description"></span><span class="item-cost"></span></span>`;
+          group.append(endlessButton);
           upgradeList.append(group);
         }
       }
@@ -681,6 +958,88 @@
         ).join("");
       }
 
+      function setNextGoal(title, detail, progress) {
+        const percent = Number.isFinite(progress) ? Math.max(0, Math.min(100, progress)) : 100;
+        $("next-goal-title").textContent = title;
+        $("next-goal-detail").textContent = detail;
+        $("next-goal-progress").style.width = `${percent}%`;
+        document.querySelector(".next-goal-track").setAttribute("aria-valuenow", String(Math.round(percent)));
+      }
+
+      function renderNextGoal() {
+        const nextRecipe = recipes.find(recipe => !state.recipes.includes(recipe.id));
+        if (nextRecipe) {
+          if (state.totalBaked < nextRecipe.unlockAt) {
+            setNextGoal(
+              `Bake ${format(nextRecipe.unlockAt)} treats to unlock ${nextRecipe.name}.`,
+              `${format(state.totalBaked)} / ${format(nextRecipe.unlockAt)} lifetime treats baked`,
+              state.totalBaked / nextRecipe.unlockAt * 100
+            );
+          } else {
+            setNextGoal(
+              `Save up for ${nextRecipe.name}.`,
+              `${format(state.balance)} / ${format(nextRecipe.cost)} treats`,
+              state.balance / nextRecipe.cost * 100
+            );
+          }
+          return;
+        }
+
+        const nextBuildingUpgrade = buildingUpgrades.find(upgrade => !state.buildingUpgrades.includes(upgrade.id));
+        if (nextBuildingUpgrade) {
+          const item = buildings.find(building => building.id === nextBuildingUpgrade.buildingId);
+          const owned = state.buildings[item.id];
+          if (owned < nextBuildingUpgrade.owned) {
+            setNextGoal(
+              `Hire ${format(nextBuildingUpgrade.owned)} ${buildingName(item, nextBuildingUpgrade.owned)} to unlock ${nextBuildingUpgrade.name}.`,
+              `${format(owned)} / ${format(nextBuildingUpgrade.owned)} owned`,
+              owned / nextBuildingUpgrade.owned * 100
+            );
+          } else {
+            setNextGoal(
+              `Save up for ${nextBuildingUpgrade.name}.`,
+              `${format(state.balance)} / ${format(nextBuildingUpgrade.cost)} treats`,
+              state.balance / nextBuildingUpgrade.cost * 100
+            );
+          }
+          return;
+        }
+
+        if (state.endlessTapLevel === 0) {
+          const unlockAt = 1000000;
+          if (state.totalBaked < unlockAt) {
+            setNextGoal(
+              "Bake 1 million lifetime treats to unlock Endless tap mastery.",
+              `${format(state.totalBaked)} / ${format(unlockAt)} lifetime treats baked`,
+              state.totalBaked / unlockAt * 100
+            );
+          } else {
+            const cost = endlessTapCost(state.endlessTapLevel);
+            setNextGoal(
+              "Endless tap mastery is unlocked. Double your tap power.",
+              `${format(state.balance)} / ${format(cost)} treats`,
+              state.balance / cost * 100
+            );
+          }
+          return;
+        }
+
+        const dimensionCost = dimensionRequirement();
+        if (state.runBaked < dimensionCost) {
+          setNextGoal(
+            "Bake enough this run to enter the Dream Dimension.",
+            `${format(state.runBaked)} / ${format(dimensionCost)} treats this run`,
+            state.runBaked / dimensionCost * 100
+          );
+          return;
+        }
+        setNextGoal(
+          `Ready to cross over and gain ${state.prestigeCount + 1} dream shard${state.prestigeCount ? "s" : ""}.`,
+          "Crossing over resets this run's treats and buildings, but keeps permanent upgrades.",
+          100
+        );
+      }
+
       function render() {
         const rate = productionRate();
         const power = tapPower();
@@ -695,15 +1054,19 @@
         $("production-summary").textContent = rate > 0
           ? `Your bakery is turning out ${format(rate)} treats every second.`
           : "Your ovens are waiting for their first order.";
+        renderNextGoal();
 
         for (const item of buildings) {
           const button = document.querySelector(`[data-building="${item.id}"]`);
-          const cost = buildingCost(item);
-          button.disabled = state.balance < cost;
-          button.classList.toggle("affordable", state.balance >= cost);
-          button.querySelector(".item-cost").textContent = `Cost: ${format(cost)} treats`;
+          const { count: countToBuy, cost } = affordableBuildingBatch(item, purchaseAmount);
+          button.disabled = countToBuy === 0;
+          button.classList.toggle("affordable", countToBuy > 0);
+          button.querySelector(".item-cost").textContent = countToBuy
+            ? `Buy ${countToBuy} · ${format(cost)} treats`
+            : `Next: ${format(cost)} treats`;
           button.querySelector(".item-count").textContent = state.buildings[item.id];
-          button.setAttribute("aria-label", `Hire ${item.name} for ${format(cost)} treats. Owned: ${state.buildings[item.id]}`);
+          const ariaQuantity = countToBuy || 1;
+          button.setAttribute("aria-label", `Buy ${ariaQuantity} ${buildingName(item, ariaQuantity)} for ${format(cost)} treats. Owned: ${state.buildings[item.id]}`);
         }
 
         for (const recipe of recipes) {
@@ -717,6 +1080,15 @@
           button.querySelector(".item-cost").textContent = purchased ? "Learned" : `Cost: ${format(recipe.cost)} treats`;
           button.setAttribute("aria-label", `${recipe.name}. ${purchased ? "Learned" : `Costs ${format(recipe.cost)} treats`}`);
         }
+        const tapUpgrade = document.querySelector("[data-endless-tap-upgrade]");
+        const tapCost = endlessTapCost(state.endlessTapLevel);
+        tapUpgrade.hidden = state.totalBaked < 1000000 && state.endlessTapLevel === 0;
+        tapUpgrade.disabled = state.balance < tapCost;
+        tapUpgrade.classList.toggle("affordable", state.balance >= tapCost);
+        tapUpgrade.querySelector(".item-name").textContent = `Endless tap mastery · level ${state.endlessTapLevel + 1}`;
+        tapUpgrade.querySelector(".item-description").textContent =
+          "Double treats from every tap. Repeatable; each level costs more.";
+        tapUpgrade.querySelector(".item-cost").textContent = `Cost: ${format(tapCost)} treats · unlock at 1 million baked`;
 
         for (const upgrade of buildingUpgrades) {
           const button = document.querySelector(`[data-building-upgrade="${upgrade.id}"]`);
@@ -730,10 +1102,21 @@
         }
         for (const item of buildings) {
           const group = document.querySelector(`[data-upgrade-group="${item.id}"]`);
+          const level = state.endlessUpgradeLevels[item.id];
+          const requirement = endlessUpgradeRequirement(level);
+          const endlessButton = group.querySelector("[data-endless-upgrade]");
+          const endlessCost = endlessUpgradeCost(item, level);
+          endlessButton.hidden = state.buildings[item.id] < requirement;
+          endlessButton.disabled = state.balance < endlessCost;
+          endlessButton.classList.toggle("affordable", state.balance >= endlessCost);
+          endlessButton.querySelector(".item-name").textContent = `${item.name} · Endless mastery ${level + 1}`;
+          endlessButton.querySelector(".item-description").textContent =
+            `Double this building's output again. Requires ${format(requirement)} owned.`;
+          endlessButton.querySelector(".item-cost").textContent = `Cost: ${format(endlessCost)} treats`;
           group.hidden = !buildingUpgrades.some(upgrade =>
             upgrade.buildingId === item.id &&
             (state.buildings[item.id] >= upgrade.owned || state.buildingUpgrades.includes(upgrade.id))
-          );
+          ) && endlessButton.hidden;
         }
         renderBoosts();
         renderDimension();
@@ -985,6 +1368,15 @@
           state.buildingUpgrades = Array.isArray(saved.buildingUpgrades)
             ? saved.buildingUpgrades.filter(id => buildingUpgrades.some(item => item.id === id))
             : [];
+          if (saved.endlessUpgradeLevels && typeof saved.endlessUpgradeLevels === "object") {
+            for (const item of buildings) {
+              const level = saved.endlessUpgradeLevels[item.id];
+              if (Number.isSafeInteger(level) && level >= 0) state.endlessUpgradeLevels[item.id] = level;
+            }
+          }
+          state.endlessTapLevel = Number.isSafeInteger(saved.endlessTapLevel) && saved.endlessTapLevel >= 0
+            ? saved.endlessTapLevel
+            : 0;
           state.recipes = saved.recipes.filter(id => recipes.some(item => item.id === id));
           state.milestones = saved.milestones.filter(id => milestones.some(item => item.id === id));
           state.dreamShards = Number.isSafeInteger(saved.dreamShards) && saved.dreamShards >= 0 ? saved.dreamShards : 0;
@@ -1040,10 +1432,10 @@
         if (!button) return;
         const item = buildings.find(building => building.id === button.dataset.building);
         if (!item) return;
-        const cost = buildingCost(item);
-        if (state.balance < cost) return;
+        const { count: amount, cost } = affordableBuildingBatch(item, purchaseAmount);
+        if (amount === 0) return;
         state.balance -= cost;
-        state.buildings[item.id]++;
+        state.buildings[item.id] += amount;
         button.classList.remove("purchase-pop");
         void button.offsetWidth;
         button.classList.add("purchase-pop");
@@ -1053,6 +1445,19 @@
       });
 
       $("upgrade-list").addEventListener("click", event => {
+        const tapButton = event.target.closest("[data-endless-tap-upgrade]");
+        if (tapButton) {
+          const cost = endlessTapCost(state.endlessTapLevel);
+          if (state.totalBaked < 1000000 || state.balance < cost ||
+              state.endlessTapLevel >= Number.MAX_SAFE_INTEGER) return;
+          state.balance -= cost;
+          state.endlessTapLevel++;
+          playSound("purchase");
+          showToast(`Endless tap mastery level ${state.endlessTapLevel}: tap power doubled!`);
+          render();
+          saveGame();
+          return;
+        }
         const button = event.target.closest("[data-recipe]");
         if (button) {
           const recipe = recipes.find(item => item.id === button.dataset.recipe);
@@ -1069,7 +1474,24 @@
           return;
         }
         const buildingButton = event.target.closest("[data-building-upgrade]");
-        if (!buildingButton) return;
+        if (!buildingButton) {
+          const endlessButton = event.target.closest("[data-endless-upgrade]");
+          if (!endlessButton) return;
+          const buildingId = endlessButton.dataset.endlessUpgrade;
+          const item = buildings.find(building => building.id === buildingId);
+          if (!item) return;
+          const level = state.endlessUpgradeLevels[buildingId];
+          const cost = endlessUpgradeCost(item, level);
+          if (state.buildings[buildingId] < endlessUpgradeRequirement(level) ||
+              state.balance < cost || level >= Number.MAX_SAFE_INTEGER) return;
+          state.balance -= cost;
+          state.endlessUpgradeLevels[buildingId]++;
+          playSound("purchase");
+          showToast(`${item.name} mastery ${level + 1}: building output doubled!`);
+          render();
+          saveGame();
+          return;
+        }
         const upgrade = buildingUpgrades.find(item => item.id === buildingButton.dataset.buildingUpgrade);
         if (!upgrade || state.buildingUpgrades.includes(upgrade.id) || state.balance < upgrade.cost ||
             state.buildings[upgrade.buildingId] < upgrade.owned) return;
@@ -1101,6 +1523,17 @@
         }
       });
       $("save-button").addEventListener("click", () => saveGame(true));
+      $("leaderboard-form").addEventListener("submit", submitLeaderboardScore);
+      $("leaderboard-refresh").addEventListener("click", loadLeaderboard);
+      document.querySelector(".buy-options").addEventListener("click", event => {
+        const option = event.target.closest("[data-buy-amount]");
+        if (!option) return;
+        purchaseAmount = Number(option.dataset.buyAmount);
+        for (const button of document.querySelectorAll("[data-buy-amount]")) {
+          button.setAttribute("aria-pressed", String(button === option));
+        }
+        render();
+      });
       $("sound-button").addEventListener("click", () => {
         state.soundEnabled = !state.soundEnabled;
         updateSoundButton();
@@ -1145,8 +1578,14 @@
       buildShop();
       updateSeasonalTheme();
       loadGame();
+      try {
+        $("leaderboard-name").value = localStorage.getItem(PLAYER_NAME_KEY) || "";
+      } catch (error) {
+        setLeaderboardStatus("Leaderboard name storage is unavailable in this browser.", "error");
+      }
       renderMilestones();
       render();
+      loadLeaderboard();
       lastFrame = Date.now();
 
       setInterval(() => {
@@ -1160,6 +1599,7 @@
       setInterval(() => {
         if (storageAvailable) saveGame();
       }, 5000);
+      setInterval(loadLeaderboard, 60000);
       setInterval(() => updateSeasonalTheme(), 60000);
 
       document.addEventListener("visibilitychange", () => {
